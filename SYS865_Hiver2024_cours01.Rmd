@@ -1,0 +1,356 @@
+---
+title: "SYS865 Inférence statistique avec programmation R"
+author: "Ornwipa Thamsuwan"
+date: "10 janvier 2024"
+# date: "`r format(Sys.time(), '%d-%m-%Y')`"
+output:
+  beamer_presentation: 
+    slide_level: 2
+    theme: "Goettingen"
+    colortheme: "crane"
+    fonttheme: "structurebold"
+header-includes:
+- \setbeamertemplate{navigation symbols}{}
+- \setbeamertemplate{footline}[page number]
+---
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+# Brise-Glace
+
+## Participantes et participants
+
+**Réponses anonymes**
+
+Go to [wooclap.com](wooclap.com)
+
+Enter the event code DOGLGJ
+
+![Lien à l'activité sur Wooclap](Wooclap-10-janvier-2023.png){width=50%, height=50%}
+
+## Participantes et participants (suite)
+
+**Introduction individuelle**
+
+1. Quel est votre nom ? Comment devrions-nous vous appeler ?
+2. Quel est la concentration de votre étude à l'ÉTS ? (c-à-d. votre programme au cycle supérieure, avec ou sans mémoire/thèse)
+3. Quel est votre formation antérieure ? au niveau du baccalauréat ? et votre expérience professionnelle ?
+4. Pourquoi est-ce que vous poursuivez ce cours ?
+5. Quels sont vos objectifs principals après avoir terminé votre étude à l'ÉTS ?
+
+# Introduction au cours
+
+## Méthodes pédagogiques et contenu
+
+- Travaux pratiques basés sur des projets en équipe
+  - Variables aléatoires et distribution de probabilités
+  - Échantillonage et estimation des paramètres
+  - Intervalles de confiance
+  - Tests d’hypothèses des moyennes et des variances
+  - Correlations et associations
+  - Régression linéaire
+  - Régression logistique
+  
+<br>
+
+- Programmation R
+
+## Méthodes d'évaluation et dates importantes
+
+- Projet 1 : Tests d'hypothèses (14 février 2024) 40%
+  - Analyse exploratoire des données
+  - Tests des suppositions pour les variables paramétriques
+  - Tests d'hypothèses des moyennes et des variances pour un ou plusieurs échantillons
+
+<br>
+
+- Projet 2 : Association des variables (21 mars 2024) 40%
+  - Régression linéaire ou logistique
+  - Techniques de l'ajustement pour les facteurs confondants ou de la stratification si nécessaire
+  
+<br>
+
+- Projet 3 : Tous ensembles (10 avril 2024) 20%
+
+## Répartition des notes des projets
+
+- Projet 1 et 2
+  - 25 pts. pour les travaux (rapports écrits)
+  - 10 pts. pour la présentation + les Q-et-R
+  - 5 pts. pour l'évaluation par les pairs
+
+<br>
+
+- Projet 3
+  - 15 pts. pour la présentation du progrès pendant deux périodes de l'accompagnement du projet
+  - 5 pts. pour l'évaluation par les pairs
+
+<br>
+
+Grille d’autoévaluation et d’évaluation par les pairs (en p.j.)
+
+## Calendrier tentatif
+
+10 janvier : introduction, variables aléatoires \
+17 janvier : espérance, variance, indépendance \
+24 janvier : échantillonage, intervalle de confiance \
+31 janvier : test d'hypothèse \
+07 février : accompagnement du projet \
+14 février : **présentation du projet 1** \
+21 février : correlation, régression linéaire \
+28 février : facteurs confondants, régression logistique \
+07 mars : *semaine de relache, il n'y a pas du cours* \
+14 mars : accompagnement du projet \
+21 mars : **présentation du projet 2** \
+28 mars : accompagnement du projet \
+03 avril : accompagnement du projet \
+10 avril : **présentation du projet 3** \
+
+# Information supplémentaire
+
+## Données utilisées
+
+**Pima Indians Diabetes Database**
+
+Lien vers la base de données sur  [Kaggle](https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database/data) 
+
+**Référence**
+
+Smith, J.W., Everhart, J.E., Dickson, W.C., Knowler, W.C., & Johannes, R.S. (1988). Using the ADAP learning algorithm to forecast the onset of diabetes mellitus. In *Proceedings of the Symposium on Computer Applications and Medical Care* (pp. 261--265). IEEE Computer Society Press.
+
+\textcolor{brown}{Merci de les télécharger avant le prochain cours.}
+
+## Installation de R et de RStudio
+
+![R](Slide-images\R.jpg){width=15%, height=15%}
+<span style="margin-left: 120px;"></span><!-- -->
+![RStudio](Slide-images\RStudio-Logo-Flat.png){width=15%, height=15%}
+
+Lien vers l'instruction dans la vidéo sur [YouTube](https://www.youtube.com/watch?v=o7o5adwuhdo)
+
+\textcolor{brown}{Merci de compléter toutes les installations avant le prochain cours.}
+
+# Variables aléatoires
+
+Variables aléatoires discrètes et continues \
+--> Lien vers des exemples sur [Wooclap](https://app.wooclap.com/events/DOGLGJ/0) \
+\
+Fonction de masse et de densité de probabilité \
+\
+Fonction de répartition \
+
+## Exemples
+
+Lancer une pièce de monaire, \
+quelle est la probabilité d'obtenir une pile ? et une face ? \
+\
+Lancer un dé équilibré, \
+quelle est la probabilité d'obtenir "1" ? "2"..."6" ?\
+\
+\pause
+Quelle est la probabilité qu’un élève de la classe ait 23 ans ?
+
+## Fonction de masse de probabilité
+
+**Procès Bernoulli**
+
+Dans un essai Bernoulli, il n’y a que deux résultats possibles. Pour une pièce équilibrée, la probabilité d'obtenir face (succès) est de 0,5, et la probabilité d'obtenir pile (échec) est également de 0,5.
+
+La fonction de masse de probabilité (FMP) pour une variable aléatoire Bernoulli est définie comme suit :
+
+- \( P(X = 1) = p \) (probabilité de succès)
+- \( P(X = 0) = 1 - p \) (probabilité d'échec)
+
+où \( X \) est la variable aléatoire représentant le résultat (1 pour face, 0 pour pile) et \( p \) est la probabilité d'obtenir une face.
+
+## Fonction de masse de probabilité (suite)
+
+**R code**
+```{r, include=TRUE}
+pmf_coin_flip <- function(p) {
+    if (p < 0 || p > 1) { stop() }
+    pmf <- c(Pile = p, Face = 1 - p)
+    return(pmf)
+}
+```
+\pause
+\
+Un vecteur des probabilités d'obtenir une pile et une face
+```{r, include=TRUE}
+pmf_coin_flip(0.5) 
+```
+
+## Fonction de masse de probabilité (suite)
+
+**R code**
+```{r, include=TRUE}
+simulate_coin_flips <- function(num_flips, p) {
+    pmf <- pmf_coin_flip(p)
+    outcomes <- names(pmf)
+    probabilities <- as.numeric(pmf)
+    flips <- sample(outcomes, size = num_flips, 
+                    replace = TRUE, 
+                    prob = probabilities)
+    return(flips)
+}
+```
+\pause
+Simulation de lancer une pièce de monnaie 7 fois
+```{r, include=TRUE}
+simulate_coin_flips(7, 0.5)
+```
+
+## Fonction de masse de probabilité (suite)
+
+Pour un dé équilibré à six faces, la fonction de masse de probabilité (FMP) attribue une probabilité de \( \frac{1}{6} \) à chaque face (1 à 6). Chaque résultat a donc une chance égale d'apparaître lors d'un lancer, représentée par la formule \( P(X = x) = \frac{1}{6} \), où \( X \) est le résultat du dé et \( x \) est une valeur spécifique entre 1 et 6.
+
+![Un dé](Wooclap-images\image_processing20200827-32423-5a84ol.png){width=20%, height=20%}
+
+## Fonction de masse de probabilité (suite)
+
+**R code** 
+```{r, include=TRUE}
+simulate_dice_rolls <- function(num_rolls) {
+  
+    # Résultats possibles : 1, 2, 3, 4, 5, 6
+    outcomes <- 1:6
+    
+    # Chaque résultat a une probabilité égale
+    probabilities <- rep(1/6, 6)
+    
+    # Simulation de lancer un dé
+    rolls <- sample(outcomes, size = num_rolls, 
+                    replace = TRUE, 
+                    prob = probabilities)
+    return(rolls)
+}
+```
+
+## Fonction de masse de probabilité (suite)
+
+Simulation de lancer un dé 20 fois
+```{r, include=TRUE}
+simulate_dice_rolls(20)
+```
+\pause
+```{r fig.width=6, fig.height=3.6, echo=FALSE}
+rolls <- simulate_dice_rolls(100)
+hist(rolls, breaks = seq(0.5, 6.5, 1), 
+     main = "Histogramme des Lancers de Dé 100 fois", 
+     xlab = "Faces du Dé", ylab = "Fréquence", 
+     col = "lightblue", border = "black",
+     cex.main = 1.3, cex.lab = 1.2, cex.axis = 1.1)
+```
+
+## Fonction de masse de probabilité (suite)
+
+```{r, echo=FALSE}
+# Possible outcomes of a dice roll
+outcomes <- 1:6
+
+# Probabilities for each outcome (fair dice)
+probabilities <- rep(1/6, 6)
+
+# Create a bar plot for the PMF
+barplot(probabilities, names.arg = outcomes, 
+        main = "Fonction de Masse de Probabilité pour un Dé Équilibré", 
+        xlab = "Résultat du Dé", ylab = "Probabilité", 
+        col = "lightblue", ylim = c(0, 1/6),
+        cex.main = 1.5, cex.lab = 1.4, cex.axis = 1.1)
+```
+
+## Fonction de densité de probabilité
+
+Quelle est la probabilité qu’un élève de la classe ait 23 ans ? 
+\pause
+```{r, echo=FALSE}
+# Set parameters
+n_samples <- 120
+mean_value <- 26
+sd_value <- 3
+
+# Generate random samples
+random_samples <- rnorm(n_samples, mean = mean_value, sd = sd_value)
+
+# Round the samples to the nearest whole number
+rounded_samples <- round(random_samples)
+
+# Print 15 figures per line
+for (i in seq_along(rounded_samples)) {
+  cat(rounded_samples[i])
+  if (i %% 15 == 0) {
+    # Add a new line after every 13th figure
+    cat("\n")
+  } else {
+    # Add a space after figures that are not the 15th in a line
+    cat(" ")
+  }
+}
+```
+
+## Fonction de densité de probabilité (suite)
+
+```{r, echo=FALSE}
+hist(random_samples, 
+     main = "Histogramme des Échantillons Normalement Distribués", 
+     xlab = "Valeur", ylab = "Fréquence", 
+     col = "lightblue", border = "black",
+     cex.main = 1.5, cex.lab = 1.4, cex.axis = 1.1)
+abline(v = 23, col = "red", lwd = 2)
+```
+
+## Fonction de densité de probabilité (suite)
+
+```{r, echo=FALSE}
+# Set parameters
+mean_value <- 26
+sd_value <- 3
+
+# Define the range for x values
+x_range <- seq(mean_value - 4 * sd_value, mean_value + 4 * sd_value, length.out = 100)
+
+# Plot the PDF
+curve(dnorm(x, mean = mean_value, sd = sd_value), 
+      from = mean_value - 4 * sd_value, 
+      to = mean_value + 4 * sd_value, 
+      main = "Fonction de densité de probabilité", 
+      xlab = "Valeur", ylab = "Densité", 
+      col = "blue", lwd = 2,
+      cex.main = 1.5, cex.lab = 1.4, cex.axis = 1.1)
+
+# Highlight area under the curve to the left of x = 23
+x_fill <- seq(mean_value - 4 * sd_value, 23, length.out = 100)
+y_fill <- dnorm(x_fill, mean = mean_value, sd = sd_value)
+polygon(c(x_fill, 23, mean_value - 4 * sd_value), c(y_fill, 0, 0), col = "skyblue", border = NA)
+
+# Add a vertical line at x = 23
+abline(v = 23, col = "red", lwd = 2)
+```
+
+## Fonction de densité de probabilité (suite)
+
+La fonction de densité de probabilité (FDP) représente la distribution des probabilités pour une variable aléatoire continue.
+
+Dans l'exemple, la variable suit une distribution normale (ou gaussienne) avec une moyenne ($\mu$) de 26 et un écart-type ($\sigma$) de 3. 
+
+Chaque point sur la courbe de la FDP indique la densité de probabilité pour une valeur donnée. La moyenne, $\mu = 26$, est le pic de cette courbe, et l'écart-type, $\sigma = 3$, indique la dispersion des valeurs autour de la moyenne. 
+
+Une ligne verticale à $x = 23$ sur cette courbe montre la position de 23 par rapport à la distribution normale. Dans une telle distribution, les valeurs se trouvent généralement dans l'intervalle $\mu \pm 3\sigma$. 
+
+# Recap
+
+- Fonction de masse de probabilité : Variables aléatoires discrètes 
+  - Lancer une pièce de monaire, quelle est la probabilité d'obtenir une pile ? et une face ? 
+  - Lancer un dé équilibré, quelle est la probabilité d'obtenir "1"..."6" ? 
+
+- Fonction de densité de probabilité : Variables aléatoires continues 
+  - Quelle est la probabilité qu’un élève de la classe ait 23 ans ?
+
+\pause
+Le prochain cours...\
+
+- Fonction de répartition
+  - Lancer un dé équilibré, quelle est la probabilité d'obtenir un numéro moins de 2 ?
+  - Quelle est la probabilité qu’un élève de la classe ait plus de 23 ans ?
