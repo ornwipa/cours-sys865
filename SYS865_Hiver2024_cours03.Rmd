@@ -1,0 +1,306 @@
+---
+title: "SYS865 Inférence statistique avec programmation R"
+author: "Ornwipa Thamsuwan"
+date: "24 janvier 2024"
+# date: "`r format(Sys.time(), '%d-%m-%Y')`"
+output:
+  beamer_presentation: 
+    slide_level: 2
+    theme: "Goettingen"
+    colortheme: "crane"
+    fonttheme: "structurebold"
+header-includes:
+- \setbeamertemplate{navigation symbols}{}
+- \setbeamertemplate{footline}[page number]
+---
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+# Plan de la séance
+
+- Récap: variables aléatoires
+  - Espérance
+  - Variance et covariance
+  - Indépendance
+- Échantillonage
+  - Méthodes d'échantillonage
+  - Taille d'échantillon
+- Début de l'inférence statistique
+  - Intervalle de confiance
+
+# Récap et matière à réflexion
+
+Lire des données
+```{r}
+data <- read.csv("diabetes.csv")
+```
+
+Espérance
+```{r}
+expectations <- sapply(data, mean)
+```
+
+Variance et covariance
+```{r}
+covariances <- var(data)
+```
+
+## Indépendance
+
+Comment savoir si deux variables sont indépendantes l’une de l’autre ?
+
+\pause
+- Inspection visuelle par graphiques de dispersion ("Scatter plot" en anglais)
+
+\pause
+- Test de hypothèse
+  - Test $\chi^2$ 
+  - Test de corrélation 
+  - Regression linéaire 
+  - Regression logistique 
+
+## Graphique de dispersion
+```{r, echo=FALSE}
+# Filter out rows where Glucose or BloodPressure is 0
+filtered_data <- data[data$Glucose != 0 & data$BloodPressure != 0, ]
+
+# Basic scatter plot with base R on filtered data
+plot(filtered_data$Glucose, filtered_data$BloodPressure, 
+     main = "Concentration de Glucose Plasmatique vs Pression Artérielle Diastolique",
+     xlab = "Concentration de Glucose Plasmatique à 2h (GTIT) [mg/dL]", 
+     ylab = "Pression Artérielle Diastolique [mm Hg]",
+     pch = 19,    # Type of point
+     col = rgb(0, 0, 1, 0.5)) # Blue color with transparency
+
+# Add a grid for better readability
+grid(nx = NULL, ny = NULL, col = "gray", lty = "dotted")
+```
+
+\pause
+À votre avis, la covariance entre le glucose et la pression artérielle est positive, négative ou proche de zéro ?
+
+## Graphique de dispersion
+```{r, echo=FALSE}
+# Filter out rows where Glucose is 0
+filtered_data <- data[data$Glucose != 0, ]
+
+# Basic scatter plot with base R on filtered data
+# Filter out rows where Glucose is 0
+filtered_data <- data[data$Glucose != 0, ]
+
+# Calculate mean glucose levels for diabetic and non-diabetic groups
+mean_glucose_diabetic <- mean(filtered_data$Glucose[filtered_data$Outcome == 1])
+mean_glucose_nondiabetic <- mean(filtered_data$Glucose[filtered_data$Outcome == 0])
+
+# Basic scatter plot with base R on filtered data
+plot(filtered_data$Glucose, filtered_data$Outcome, 
+     main = "Concentration de Glucose Plasmatique vs Résultat Diabétique",
+     xlab = "Concentration de Glucose Plasmatique à 2h (GTIT) [mg/dL]", 
+     ylab = "Résultat Diabétique",
+     pch = ifelse(filtered_data$Outcome == 1, 19, 17),    # Different point shapes
+     col = ifelse(filtered_data$Outcome == 1, "darkred", "darkgreen")) # Red for diabetic, blue for non-diabetic
+
+# Add mean glucose level markers
+points(mean_glucose_diabetic, 1, pch = 4, col = "pink", cex = 2) # Diabetic mean
+points(mean_glucose_nondiabetic, 0, pch = 4, col = "green", cex = 2) # Non-diabetic mean
+
+# Add a grid for better readability
+grid(nx = NULL, ny = NULL, col = "gray", lty = "dotted")
+```
+
+\pause
+Remarquez la différence dans la moyenne et dans la plage en comparant le cas des diabétiques et des non-diabétiques ?
+
+## Récap et matière à réflexion (suite)
+
+Pouvons-nous utiliser les données fournies pour répondre à ces questions ?
+
+Les données sont-elles représentatives de la population ?
+
+\pause
+![Relation entre population et échantillon](Slide-images\Population-Sample.png){width=50%, height=50%}
+
+# Méthodes d'échantillonage
+
+![Échantillonage](Slide-images\Sampling.png){width=70%, height=70%}
+
+## Définitions et exemples
+
+*Recherche sur la complexité des problèmes de statistiques dispensés par les professeurs aux différentes spécialisations à l'ÉTS :*
+
+\pause
+**Population** : Un ensemble complet d'éléments (personnes, objets ou sujets) ayant des caractéristiques spécifiques que vous souhaitez étudier et sur lesquelles vous souhaitez faire des inférences.
+
+- *Tous les enseignants de l'ÉTS qui dispensent des cours en statistiques aux différentes spécialisations.*
+
+\pause
+**Cadre d'échantillonnage** : le matériel source ou la liste complète à partir de laquelle un échantillon est tiré. C'est une compilation exhaustive de tous les éléments de votre population.
+
+- *Le registre de l'ÉTS qui liste tous les enseignants des cours en statistiques.*
+
+## Définitions et exemples
+
+**Échantillon** : Un sous-ensemble d'une population. Il s'agit de l'ensemble spécifique d'éléments à partir desquels vous collecterez des données.
+
+- *Sous-ensemble des enseignants de l'ÉTS que vous sélectionnez pour votre étude.*
+
+\pause
+**Taille de l'échantillon** : le nombre de membres de la population enquêtés, mesurés ou observés. 
+
+La taille de l'échantillon détermine la quantité de données, ce qui influence davantage la précision de votre étude et la fiabilité de vos résultats. 
+
+## Échantillonnage probabiliste
+
+**Échantillonnage aléatoire simple** : Chaque membre de la population a une chance égale d'être sélectionné. 
+
+\pause
+**Échantillonnage systématique** : On sélectionne des membres de la population à intervalles réguliers, par exemple, choisir chaque 10ème personne de la liste.
+
+\pause
+**Échantillonnage stratifié** : La population est divisée en sous-groupes (strates) qui partagent des caractéristiques similaires. Un échantillon aléatoire est ensuite prélevé dans chacune de ces strates. Cette méthode garantit une représentation de chaque sous-groupe.
+
+\pause
+**Échantillonnage par grappes** : La population est divisée en grappes, généralement basées sur des zones géographiques, et un échantillon aléatoire de ces grappes est choisi. Tous les individus des grappes sélectionnées sont dans l'échantillon.
+
+## Échantillonnage probabiliste (suite)
+
+![Échantillonage probabiliste](Slide-images\1703-Sampling-methods-2.jpg){width=50%, height=50%}
+
+## Échantillonnage non-probabiliste
+
+**Échantillonnage de convenance** : Les participants choisis sont les plus faciles à atteindre. Ce n'est pas un échantillon aléatoire et est souvent utilisé pour les tests pilotes.
+
+\pause
+**Échantillonnage intentionnel** : Les participants sont sélectionnés en fonction du but de l'étude et du jugement du chercheur.
+
+\pause
+**Échantillonnage à réponse volontaire** : C'est les sujets qui choisissent de participer, souvent en réponse à une invitation générale.
+
+\pause
+**Échantillonnage boule de neige** : Les sujets actuels recrutent de futurs sujets parmi leurs connaissances. Cela est particulièrement utile pour atteindre des populations difficiles d'accès.
+
+## Échantillonnage non-probabiliste (suite)
+
+![Échantillonage non-probabiliste](Slide-images\1703-Sampling-methods-3.jpg){width=45%, height=75%}
+
+## Discussion
+
+En groupe de 3-4, discutez de quelle serait la situation dans laquelle chacune des méthodes d’échantillonnage serait utilisée ?
+
+## Vérification des connaissances
+
+Pour une étude sur une maladie rare, un chercheur choisi délibérément les patients connus pour souffrir de cette maladie à partir des dossiers médicaux ou des établissements de santé spécialisés.
+
+\pause
+- Échantillonnage intentionnel
+
+\pause
+Pour évaluer l'efficacité d'une nouvelle campagne de santé, une organisation sélectionne au hasard cinq quartiers d'une ville. Ils enquêtent ensuite sur chaque foyer de ces quartiers.
+
+\pause
+- Échantillonnage par grappes
+
+## Vérification des connaissances
+
+Dans une étude sur la santé mentale des personnes sans abri, les premiers participants sans abri recommandent d'autres personnes sans abri qu'ils connaissent.
+
+\pause
+- Échantillonnage boule de neige
+
+\pause
+Une équipe de recherche sur la prévalence de l’hypertension divise la population en catégories ethniques, puis sélectionne au hasard un nombre proportionné d'individus dans chaque groupe pour garantir que tous soient représentés.
+
+\pause
+- Échantillonnage stratifié
+
+## Attention!
+![Biais de l'échantillonage](Slide-images\responsebias.jpg){width=80%, height=60%}
+
+# Taille de l'échantillon
+
+## Théorème Central Limite et Implications
+
+Le Théorème Central Limite (TCL) stipule que, pour une taille d'échantillon suffisamment grande, la distribution des moyennes d'échantillons se rapprochera d'une distribution normale, indépendamment de la distribution originale de la population.
+
+\pause
+### Définition
+
+Si \( X_1, X_2, X_3, ..., X_n \) sont des échantillons aléatoires pris d'une population avec une moyenne générale \( \mu \) et une variance finie \( \sigma^2 \), la moyenne de l'échantillon \( \overline{X} = \frac{1}{n}(X_1 + X_2 + X_3 + ... + X_n) \) sera approximativement distribuée normalement avec une moyenne \( \mu \) et une variance \( \frac{\sigma^2}{n} \), à mesure que \( n \) devient grand.
+
+La distribution normale est notée \( N(\mu, \frac{\sigma^2}{n}) \).
+
+## Simulation avec des donnés
+
+BMI dans la base de données de "Pima Indian Diabetes Dataset"
+
+```{r, echo=FALSE}
+# Fonction pour simuler le TCL et retourner les moyennes des échantillons
+obtenir_moyennes_echantillon <- function(taille_echantillon, nb_echantillons = 1000) {
+  moyennes <- numeric(nb_echantillons)
+  
+  for (i in 1:nb_echantillons) {
+    # Prendre un échantillon des données BMI
+    echantillons <- sample(data$BMI, size = taille_echantillon, replace = TRUE)
+    # Calculer la moyenne de l'échantillon
+    moyennes[i] <- mean(echantillons)
+  }
+  
+  return(moyennes)
+}
+
+# Préparer les couleurs et les tailles des échantillons pour le tracé
+couleurs_tracé <- c("turquoise", "green", "orange", "violet")
+tailles_echantillons <- c(10, 30, 60, 100)
+etiquettes_legendes <- paste("n =", tailles_echantillons)
+densités_maximales <- numeric(length(tailles_echantillons))
+
+# Calculer les densités maximales pour chaque taille d'échantillon
+for (i in seq_along(tailles_echantillons)) {
+  moyennes <- obtenir_moyennes_echantillon(tailles_echantillons[i])
+  densités_maximales[i] <- max(density(moyennes)$y)
+}
+
+# Déterminer ylim
+ylim_haut <- max(densités_maximales) * 1.1  # 10% de plus que le max pour assurer de l'espace
+
+# Créer un tracé vide
+plot(NULL, xlim = c(min(data$BMI), max(data$BMI)), ylim = c(0, ylim_haut),
+     xlab = "Moyenne de l'échantillon", ylab = "Densité",
+     main = "Distribution des moyennes d'échantillons pour différentes tailles d'échantillons")
+
+# Boucle pour chaque taille d'échantillon, ajouter les histogrammes au tracé
+for (i in seq_along(tailles_echantillons)) {
+  moyennes <- obtenir_moyennes_echantillon(tailles_echantillons[i])
+  # Ajouter l'histogramme de densité au tracé
+  lines(density(moyennes), col = couleurs_tracé[i], lwd = 2)
+}
+
+# Ajouter une légende
+legend("topright", legend = etiquettes_legendes, col = couleurs_tracé, lwd = 2)
+```
+
+## Distribution Normale
+
+Le TCL justifie l'utilisation de la distribution normale dans l'inférence statistique et les tests d'hypothèses, même lorsque la population sous-jacente n'est pas normalement distribuée.
+
+À mesure que \( n \) (la taille de l'échantillon) augmente, la forme de la distribution de la moyenne de l'échantillon \( \overline{X} \) devient de plus en plus en cloche ("bell-shapred" en anglais) ou normale.
+
+## Réduction des Erreurs d'Échantillonnage
+
+L'erreur standard de la moyenne, qui mesure la variabilité des moyennes d'échantillons, est donnée par \( SE = \frac{\sigma}{\sqrt{n}} \).
+
+À mesure que la taille de l'échantillon \( n \) augmente, l'erreur standard \( SE \) diminue. Cela indique que des échantillons plus grands fournissent des estimations plus précises de la moyenne de la population, réduisant ainsi le risque d'erreur d'échantillonnage.
+
+## À noter que ...
+
+La taille d'échantillon "suffisamment grande" pour le TCL est généralement considérée comme étant 30 ou plus, mais cela peut varier en fonction de la population.
+
+# Intervalle de confiance
+
+
+
+# Résumé
+
+![Théorème Central Limite](Slide-images\clt.jpg){width=80%, height=60%}
