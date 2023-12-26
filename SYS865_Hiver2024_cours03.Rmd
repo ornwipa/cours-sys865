@@ -216,7 +216,10 @@ Une équipe de recherche sur la prévalence de l’hypertension divise la popula
 - Échantillonnage stratifié
 
 ## Attention!
-![Biais de l'échantillonage](Slide-images\responsebias.jpg){width=80%, height=60%}
+![Biais de réponse](Slide-images\responsebias.jpg){width=80%, height=60%}
+
+## Attention!
+![Biais de survie](Slide-images\survivalbias.jpg){width=80%, height=60%}
 
 # Taille de l'échantillon
 
@@ -231,9 +234,9 @@ Si \( X_1, X_2, X_3, ..., X_n \) sont des échantillons aléatoires pris d'une p
 
 La distribution normale est notée \( N(\mu, \frac{\sigma^2}{n}) \).
 
-## Simulation avec des donnés
+## Simulation avec des données
 
-BMI dans la base de données de "Pima Indian Diabetes Dataset"
+À partir de la base de données de "Pima Indian Diabetes Dataset", les IMC (ou "BMI" en anglais) sont échantillonées.
 
 ```{r, echo=FALSE}
 # Fonction pour simuler le TCL et retourner les moyennes des échantillons
@@ -262,11 +265,15 @@ for (i in seq_along(tailles_echantillons)) {
   densités_maximales[i] <- max(density(moyennes)$y)
 }
 
-# Déterminer ylim
+# Calculer les limites pour xlim et ylim
+all_means <- unlist(lapply(tailles_echantillons, obtenir_moyennes_echantillon))
+xlim_bas <- min(all_means)
+xlim_haut <- max(all_means)
 ylim_haut <- max(densités_maximales) * 1.1  # 10% de plus que le max pour assurer de l'espace
 
 # Créer un tracé vide
-plot(NULL, xlim = c(min(data$BMI), max(data$BMI)), ylim = c(0, ylim_haut),
+# plot(NULL, xlim = c(min(data$BMI), max(data$BMI)), ylim = c(0, ylim_haut),
+plot(NULL, xlim = c(xlim_bas, xlim_haut), ylim = c(0, ylim_haut),
      xlab = "Moyenne de l'échantillon", ylab = "Densité",
      main = "Distribution des moyennes d'échantillons pour différentes tailles d'échantillons")
 
@@ -285,12 +292,14 @@ legend("topright", legend = etiquettes_legendes, col = couleurs_tracé, lwd = 2)
 
 Le TCL justifie l'utilisation de la distribution normale dans l'inférence statistique et les tests d'hypothèses, même lorsque la population sous-jacente n'est pas normalement distribuée.
 
+\pause
 À mesure que \( n \) (la taille de l'échantillon) augmente, la forme de la distribution de la moyenne de l'échantillon \( \overline{X} \) devient de plus en plus en cloche ("bell-shapred" en anglais) ou normale.
 
 ## Réduction des Erreurs d'Échantillonnage
 
-L'erreur standard de la moyenne, qui mesure la variabilité des moyennes d'échantillons, est donnée par \( SE = \frac{\sigma}{\sqrt{n}} \).
+L'**erreur standard**, qui mesure la variabilité des moyennes d'échantillons \( \overline{X} \), est donnée par \( SE = \frac{\sigma}{\sqrt{n}} \).
 
+\pause
 À mesure que la taille de l'échantillon \( n \) augmente, l'erreur standard \( SE \) diminue. Cela indique que des échantillons plus grands fournissent des estimations plus précises de la moyenne de la population, réduisant ainsi le risque d'erreur d'échantillonnage.
 
 ## À noter que ...
@@ -299,8 +308,147 @@ La taille d'échantillon "suffisamment grande" pour le TCL est généralement co
 
 # Intervalle de confiance
 
+![Intervalle de confiance ?](Slide-images\garfield-confidence-interval.png){width=50%, height=50%}
 
+## Définition de l'Intervalle de Confiance
 
-# Résumé
+Un intervalle de confiance est une plage de valeurs estimée à partir des données d'un échantillon, destinée à contenir un paramètre inconnu de la population (par exemple, moyenne de la population \( \mu \)).
 
-![Théorème Central Limite](Slide-images\clt.jpg){width=80%, height=60%}
+![Estimation de l'IC](Slide-images\Interval-Estimate.jpg){width=50%, height=50%}
+
+## Composants d'un Intervalle de Confiance
+
+- **Estimation Ponctuelle** est généralement la moyenne de l'échantillon (\( \overline{x} \)).
+
+- **Niveau de Confiance**, exprimé en pourcentage (90 %, 95 %, 99 %, etc.), indique la **probabilité** que cet intervalle contienne le paramètre de la population si l'expérience est répétée plusieurs fois.
+
+- **Marge d'Erreur (ME)** reflète l'incertitude autour de l'estimation ponctuelle et dépend de l'écart-type de la population \( \sigma \) et de la taille de l'échantillon \( n \).
+
+\pause
+![Composants d'un IC](Slide-images\Confidence-Interval-for-Population-Mean-Explainer.jpg){width=20%, height=20%}
+
+## Intervalle de Confiance pour la Moyenne
+
+### Lorsque \( \sigma \) est Connue
+
+- Formule : \( CI = \overline{x} \pm z \times \frac{\sigma}{\sqrt{n}} \)
+
+- \( z \) : Score Z de la distribution normale, correspondant au niveau de confiance souhaité.
+
+\pause
+
+### Lorsque \( \sigma \) est Inconnue
+
+- Formule : \( CI = \overline{x} \pm t \times \frac{s}{\sqrt{n}} \)
+
+- \( t \) : Score t de la distribution t, variant selon la taille de l'échantillon.
+
+## Niveau de Confiance et Score z
+
+![Niveau de Confiance ou \( 1 - \alpha \)](Slide-images\Sample-Distribution-Rejection-Region.jpg){width=60%, height=60%}
+
+- L'erreur \( \alpha \) sera expliqué dans la prochaine séance sur les tests d'hypothèse.
+
+## Interprétation d'un Intervalle de Confiance
+
+Un IC de 95 % signifie que si de nombreux échantillons sont pris et qu'un IC est construit à partir de chacun, environ 95 % de ces intervalles contiendront la vraie moyenne de la population. Cela ne signifie pas qu'il y a 95 % de probabilité que l'intervalle donné contienne la moyenne populationnelle.
+
+## Exemples avec R
+
+IC du paramètre "Glucose" dans la base de données "Pima Indian Diabetes"
+
+\pause
+- Calculer la moyenne et l'écart type
+```{r}
+data <- subset(data, Glucose > 0)
+mean_glucose <- mean(data$Glucose, na.rm = TRUE)
+sd_glucose <- sd(data$Glucose, na.rm = TRUE)
+```
+
+\pause
+- Déterminer la taille de l'échantillon et l'erreur standard
+```{r}
+n <- sum(!is.na(data$Glucose))
+se <- sd_glucose / sqrt(n)
+```
+
+\pause
+- Préciser le niveau de confiance de 95 % avec le niveau de signification de 0,05
+```{r}
+alpha <- 0.05
+```
+
+## Exemples avec R (suite)
+
+- Calculer la valeur critique à partir de la distribution t (t-score)
+```{r}
+t_critical <- qt(1 - alpha/2, df = n - 1)
+```
+
+\pause
+- Calculer la marge d'erreur et le IC
+```{r}
+margin_error <- t_critical * se
+ci_lower <- mean_glucose - margin_error
+ci_upper <- mean_glucose + margin_error
+```
+
+\pause
+L'intervalle de confiance à 95 % pour le taux de glucose plasmatique moyen se situe entre ... mg/dL
+```{r, echo=FALSE}
+cat(ci_lower, "et", ci_upper)
+```
+
+## Exemples avec R (suite)
+
+Et les ICs à 95 % du taux de glucose plasmatique des personnes non diabétiques (Outcome = 0) vs diabétiques (Outcome = 1) ?
+
+\pause
+```{r, echo=FALSE}
+# Define a function to calculate the confidence interval
+calculate_ci <- function(data, conf_level = 0.95) {
+  mean_glucose <- mean(data$Glucose, na.rm = TRUE)
+  sd_glucose <- sd(data$Glucose, na.rm = TRUE)
+  n <- sum(!is.na(data$Glucose))
+  
+  alpha <- 1 - conf_level
+  se <- sd_glucose / sqrt(n)
+  t_critical <- qt(1 - alpha/2, df = n - 1)
+  margin_error <- t_critical * se
+  
+  ci_lower <- mean_glucose - margin_error
+  ci_upper <- mean_glucose + margin_error
+  
+  return(c(lower = ci_lower, upper = ci_upper))
+}
+```
+
+- Coupter des données
+```{r}
+data_outcome_0 <- subset(data, Outcome == 0)
+data_outcome_1 <- subset(data, Outcome == 1)
+```
+
+\pause
+- Calculer les ICs
+```{r, echo=FALSE}
+ci_outcome_0 <- calculate_ci(data_outcome_0)
+ci_outcome_1 <- calculate_ci(data_outcome_1)
+cat("Outcome 0: [", ci_outcome_0['lower'], ",", ci_outcome_0['upper'], "]\n")
+cat("Outcome 1: [", ci_outcome_1['lower'], ",", ci_outcome_1['upper'], "]")
+```
+
+\pause
+\textcolor{red}{Observez que ces deux intervalles de confiance ne se chevauchent pas.}
+
+# Travaux pratiques
+
+Pour chacun des neuf paramètres dans la base de données sur les diabètes ...
+
+1. Calculer l'intervalle de confiance
+
+2. En séparant selon le paramètre "Outcome" (0 ou 1), recalculer l'IC
+
+3. Déterminer si les IC des deux groupes sont différents 
+
+4. (Bonus) Créer un graphique pour présenter la distribution de probabilité avec l'estimation ponctuelle et la marge d'erreur
