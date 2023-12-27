@@ -1,0 +1,379 @@
+---
+title: "SYS865 Inférence statistique avec programmation R"
+author: "Ornwipa Thamsuwan"
+date: "31 janvier 2024"
+# date: "`r format(Sys.time(), '%d-%m-%Y')`"
+output:
+  beamer_presentation: 
+    slide_level: 2
+    theme: "Goettingen"
+    colortheme: "crane"
+    fonttheme: "structurebold"
+header-includes:
+- \setbeamertemplate{navigation symbols}{}
+- \setbeamertemplate{footline}[page number]
+---
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+# Plan de la séance
+
+- Récap
+  - Échantillonage
+  - Théorème Central Limite
+  - Intervalle de confiance
+- Test d'hypothèse
+  - Types d'erreur
+  - Test de moyenne
+  - Test de variance
+  - Test de deux populations
+  - Test nonparamétrique
+
+# Récap et matière à réflexion
+
+**Réponses anonymes**
+
+Go to [wooclap.com](wooclap.com)
+
+Enter the event code FFBQSE
+
+![Lien à l'activité sur Wooclap](Wooclap-31-janvier-2023.png){width=50%, height=50%}
+
+## Échantillonage
+
+**Characteristiques de l'échantillonage probabilistique**
+
+1. **Sélection aléatoire** : Les individus sont choisis de manière aléatoire, ce qui assure l'impartialité dans la sélection.
+
+\pause
+
+2. **Probabilité égale ou connue** : Chaque membre de la population a une chance égale ou connue d'être inclus dans l'échantillon. Ça permet d'avoir une représentation équitable de la population.
+
+\pause
+
+3. **Représentativité** : L'échantillon a de fortes chances d'être représentatif de la population globale. Cela rend possible de généraliser les résultats de l'échantillon à l'ensemble de la population.
+
+## Échantillonage (suite)
+
+**Characteristiques de l'échantillonage probabilistique**
+
+4. **Inférence statistique** : Ces méthodes permettent de calculer des erreurs d'échantillonnage, des intervalles de confiance et de réaliser des tests de significativité. Cela offre la possibilité de tirer des conclusions statistiques sur la population à partir de l'échantillon.
+
+![Inférence statistique](Slide-images\Population-Sample.png){width=30%, height=30%}
+
+## Théorème Central Limite
+
+À mesure que l'échantillon s'agrandit, la distribution de la moyenne de cet échantillon \( \overline{X}_n \) se rapproche d'une distribution normale, indépendamment de la forme de la distribution de la population.
+
+![Théorème Central Limite](Slide-images\clt.jpg){width=70%, height=50%}
+
+## Théorème Central Limite (suite)
+
+Le Théorème Central Limite peut être résumé par l'équation suivante :
+
+\[ \overline{X}_n \approx N\left(\mu, \frac{\sigma^2}{n}\right) \]
+
+Où :
+
+- \( \overline{X}_n \) est la moyenne de l'échantillon d'un ensemble de \( n \) variables aléatoires **\textcolor{brown}{indépendantes et identiquement distribuées}**.
+
+- \( N\left(\mu, \frac{\sigma^2}{n}\right) \) indique que \( \overline{X}_n \) suit approximativement une distribution normale avec une moyenne \( \mu \) (la moyenne de la population) et une variance \( \frac{\sigma^2}{n} \) (la variance de la population divisée par la taille de l'échantillon \( n \)).
+
+## Intervalle de confiance
+
+Un IC est une plage de valeurs statistiques utilisée pour estimer la fiabilité d'une estimation d'un paramètre de population, comme la moyenne. Il est exprimé avec un niveau de confiance, indiquant la probabilité que cet intervalle contienne le vrai paramètre de la population.
+
+### Lorsque \( \sigma \) est Connue
+
+- Formule : \( CI = \overline{x} \pm z \times \frac{\sigma}{\sqrt{n}} \)
+
+- \( z \) : Score Z de la distribution normale, correspondant au niveau de confiance souhaité.
+
+### Lorsque \( \sigma \) est Inconnue
+
+- Formule : \( CI = \overline{x} \pm t \times \frac{s}{\sqrt{n}} \)
+
+- \( t \) : Score t de la distribution t, variant selon la taille de l'échantillon.
+
+## Intervalle de confiance (dernier TP)
+
+```{r, echo=FALSE}
+data <- read.csv("diabetes.csv")
+
+# Filter out 0 values from the Glucose column
+filtered_data <- subset(data, Glucose > 0)
+
+# Calculate density for each group
+density_all <- density(filtered_data$Glucose, na.rm = TRUE)
+density_outcome_0 <- density(subset(filtered_data, Outcome == 0)$Glucose, na.rm = TRUE)
+density_outcome_1 <- density(subset(filtered_data, Outcome == 1)$Glucose, na.rm = TRUE)
+
+# Find the range for the plot
+x_lim_range <- range(density_all$x, density_outcome_0$x, density_outcome_1$x)
+y_lim_range <- range(density_all$y, density_outcome_0$y, density_outcome_1$y)
+
+# Set up the plot with appropriate limits
+plot(density_all, xlim = x_lim_range, ylim = y_lim_range, 
+     main = "Density Plot of Glucose", 
+     xlab = "Concentration de Glucose Plasmatique à 2h (GTIT) [mg/dL]", 
+     ylab = "Density", col = "black")
+
+# Overlay the density plots for each group
+lines(density_outcome_0, col = "blue")
+lines(density_outcome_1, col = "red")
+
+# Add a legend
+legend("topright", legend = c("All", "Outcome 0 (non-diabetic)", "Outcome 1 (diabetic)"), 
+       col = c("black", "blue", "red"), lty = 1, cex = 0.8)
+```
+
+\pause
+\textcolor{red}{Les personnes diabétiques et non diabétiques ont-elles des niveaux différents du glucose plasmatique ?}
+
+## Intervalle de confiance (dernier TP)
+
+En appliquant le Théorème Central Limite ...
+
+```{r, echo=FALSE}
+# Calculate mean and standard deviation for each Outcome group
+mean_glucose_0 <- mean(subset(filtered_data, Outcome == 0)$Glucose, na.rm = TRUE)
+sd_glucose_0 <- sd(subset(filtered_data, Outcome == 0)$Glucose, na.rm = TRUE)
+
+mean_glucose_1 <- mean(subset(filtered_data, Outcome == 1)$Glucose, na.rm = TRUE)
+sd_glucose_1 <- sd(subset(filtered_data, Outcome == 1)$Glucose, na.rm = TRUE)
+
+# Define a sequence of glucose values for plotting
+glucose_range <- seq(min(filtered_data$Glucose, na.rm = TRUE), max(filtered_data$Glucose, na.rm = TRUE), length.out = 200)
+
+# Calculate normal distribution values for each group
+normal_values_0 <- dnorm(glucose_range, mean = mean_glucose_0, sd = sd_glucose_0)
+normal_values_1 <- dnorm(glucose_range, mean = mean_glucose_1, sd = sd_glucose_1)
+
+# Plot the normal probability distributions
+plot(glucose_range, normal_values_0, type = 'l', col = 'blue', lwd = 2, 
+     main = 'Normal Probability Distributions of Glucose by Outcome with 95% Confidence Intervals of the Means', 
+     xlab = 'Concentration de Glucose Plasmatique à 2h (GTIT) [mg/dL]', 
+     ylab = 'Density')
+lines(glucose_range, normal_values_1, col = 'red', lwd = 2)
+
+# Define a function to calculate the confidence interval
+calculate_ci <- function(data, conf_level = 0.95) {
+  mean_glucose <- mean(data$Glucose, na.rm = TRUE)
+  sd_glucose <- sd(data$Glucose, na.rm = TRUE)
+  n <- sum(!is.na(data$Glucose))
+  
+  alpha <- 1 - conf_level
+  se <- sd_glucose / sqrt(n)
+  t_critical <- qt(1 - alpha/2, df = n - 1)
+  margin_error <- t_critical * se
+  
+  ci_lower <- mean_glucose - margin_error
+  ci_upper <- mean_glucose + margin_error
+  
+  return(c(lower = ci_lower, upper = ci_upper))
+}
+
+# Calculate CI for filtered data and each Outcome group
+ci_outcome_0 <- calculate_ci(subset(filtered_data, Outcome == 0))
+ci_outcome_1 <- calculate_ci(subset(filtered_data, Outcome == 1))
+
+# Add CI lines for each group
+abline(v = ci_outcome_0["lower"], col = "blue", lty = 2)
+abline(v = ci_outcome_0["upper"], col = "blue", lty = 2)
+abline(v = ci_outcome_1["lower"], col = "red", lty = 2)
+abline(v = ci_outcome_1["upper"], col = "red", lty = 2)
+
+# Add a legend
+legend("topright", legend = c("Outcome 0", "Outcome 1"), col = c("blue", "red"), lwd = 2)
+```
+
+\pause
+\textcolor{red}{Les deux moyennes sont-elles différentes ?}
+
+## Plan de la séance
+
+- Récap
+  - Échantillonage
+  - Théorème Central Limite
+  - Intervalle de confiance
+- Test d'hypothèse
+  - Types d'erreur
+  - Test de moyenne
+  - Test de variance
+  - Test de deux populations
+  - Test nonparamétrique
+
+# Types d'erreur
+
+**Erreur de type I (faux positif)** : l'enquêteur rejette une *hypothèse nulle* qui est réellement vraie dans la population.
+
+**Erreur de type II (faux négatif)** : l’investigateur ne parvient pas à rejeter une *hypothèse nulle* qui est en réalité fausse dans la population.
+
+\pause
+... mais quelle est l'hypothèse nulle ?
+
+## Types d'erreur (suite)
+
+Alors, voici un exemple ...
+
+![Erreur type I et II](Slide-images\Type-1-and-2-Error-reddit.png)
+
+## Erreur type I
+
+**Alpha \( \alpha \)** représente le seuil de probabilité de commettre une erreur de type I dans un test d'hypothèse. C'est la probabilité maximale acceptable de rejeter à tort l'hypothèse nulle. 
+
+Communément fixé à 0,05 (5 %), un \( \alpha \) de 0,05 signifie qu'il y a 5 % de chances de rejeter l'hypothèse nulle alors qu'elle est en réalité vraie.
+
+Réduire \( \alpha \) diminue les chances d'une erreur de type I, mais augmente le risque d'une erreur de type II.
+
+## Erreur type II
+
+**Beta \( \beta \)** représente la probabilité de commettre une erreur de type II dans un test d'hypothèse. C'est la probabilité de ne pas rejeter une hypothèse nulle fausse. 
+
+La puissance d'un test, qui est \( 1 - \beta \), indique la capacité du test à rejeter correctement une fausse hypothèse nulle. 
+
+Réduire \( \beta \) (augmentant ainsi la puissance) nécessite souvent d'augmenter la taille de l'échantillon ou la taille de l'effet.
+
+## Types d'erreur (suite)
+
+En supposant que le paramètre "Glucose" est normalement distribué ...
+
+```{r, echo=FALSE}
+# Calculate mean and standard deviation for each Outcome group
+mean_glucose_0 <- mean(subset(filtered_data, Outcome == 0)$Glucose, na.rm = TRUE)
+sd_glucose_0 <- sd(subset(filtered_data, Outcome == 0)$Glucose, na.rm = TRUE)
+
+mean_glucose_1 <- mean(subset(filtered_data, Outcome == 1)$Glucose, na.rm = TRUE)
+sd_glucose_1 <- sd(subset(filtered_data, Outcome == 1)$Glucose, na.rm = TRUE)
+
+# Define a sequence of glucose values for plotting
+glucose_range <- seq(min(filtered_data$Glucose, na.rm = TRUE), max(filtered_data$Glucose, na.rm = TRUE), length.out = 200)
+
+# Calculate normal distribution values for each group
+normal_values_0 <- dnorm(glucose_range, mean = mean_glucose_0, sd = sd_glucose_0)
+normal_values_1 <- dnorm(glucose_range, mean = mean_glucose_1, sd = sd_glucose_1)
+
+# Plot the normal probability distributions
+plot(glucose_range, normal_values_0, type = 'l', col = 'blue', lwd = 2, 
+     main = 'Normal Probability Distributions of Glucose by Outcome', 
+     xlab = 'Concentration de Glucose Plasmatique à 2h (GTIT) [mg/dL]', 
+     ylab = 'Density')
+lines(glucose_range, normal_values_1, col = 'red', lwd = 2)
+
+# Add a legend
+legend("topright", legend = c("Outcome 0", "Outcome 1"), col = c("blue", "red"), lwd = 2)
+```
+
+## Erreur type I
+
+Une concentration de glucose plasmatique (à 2h) normale est inférieure à 140 mg/dL.
+
+```{r, echo=FALSE}
+# Plot the normal probability distributions
+plot(glucose_range, normal_values_0, type = 'l', col = 'blue', lwd = 2, 
+     main = 'Normal Probability Distributions of Glucose by Outcome', 
+     xlab = 'Concentration de Glucose Plasmatique à 2h (GTIT) [mg/dL]', 
+     ylab = 'Density', ylim = c(0, max(normal_values_0, normal_values_1)))
+lines(glucose_range, normal_values_1, col = 'red', lwd = 2)
+
+# Add a vertical line at x=140
+abline(v = 140, col = "black", lwd = 2, lty = 2)
+
+# Highlight the area under the blue curve to the right of x=140 (Type I error area for Outcome 0)
+x_area <- glucose_range[glucose_range > 140]
+y_area <- dnorm(x_area, mean = mean_glucose_0, sd = sd_glucose_0)
+polygon(c(140, x_area, max(glucose_range)), c(0, y_area, 0), col = "lightblue", border = NA)
+
+# Add a legend
+legend("topright", legend = c("Outcome 0", "Outcome 1", "Erreur type I (Valeur supérieur à 140)"), 
+       col = c("blue", "red", "lightblue"), lty = 1, lwd = 2, bty = "n")
+```
+
+## Erreur type II
+
+Une concentration de glucose plasmatique (à 2h) normale est inférieure à 140 mg/dL.
+
+```{r, echo=FALSE}
+# Plot the normal probability distributions
+plot(glucose_range, normal_values_0, type = 'l', col = 'blue', lwd = 2, 
+     main = 'Normal Probability Distributions of Glucose by Outcome', 
+     xlab = 'Concentration de Glucose Plasmatique à 2h (GTIT) [mg/dL]', 
+     ylab = 'Density', ylim = c(0, max(normal_values_0, normal_values_1)))
+lines(glucose_range, normal_values_1, col = 'red', lwd = 2)
+
+# Add a vertical line at x=140
+abline(v = 140, col = "black", lwd = 2, lty = 2)
+
+# Highlight the area under the red curve to the left of x=140 (Type II error area for Outcome 1)
+x_area <- glucose_range[glucose_range < 140]
+y_area <- dnorm(x_area, mean = mean_glucose_1, sd = sd_glucose_1)
+polygon(c(min(glucose_range), x_area, 140), c(0, y_area, 0), col = "lightcoral", border = NA)
+
+# Add a legend
+legend("topright", legend = c("Outcome 0", "Outcome 1", "Erreur Type II (Valeur inferieur à 140)"), 
+       col = c("blue", "red", "lightcoral"), lty = 1, lwd = 2, bty = "n")
+```
+
+## Tableau de contingence
+
+Ou en utilisant directement les décomptes de données ...
+
+\pause
+Discrétiser la variable 'Glucose'
+```{r}
+data$GlucoseCtgr <- ifelse(data$Glucose < 140, 
+                               "Less than 140", 
+                               "140 and above")
+```
+
+\pause
+Créer un tableau de contingence avec les variables discrètes 'GlucoseCtgr' et 'Outcome'
+```{r}
+contingency <- table(data$GlucoseCtgr, data$Outcome)
+print(contingency)
+```
+
+## Tableau de contingence (suite)
+
+Quels sont les valeurs de \( \alpha \) et \( \beta \) ?
+
+\pause
+- Erreur type I : 'Glucose' est '140 and above' et 'Outcome' est 0.
+
+- Erreur type II : 'Glucose' est 'Less than 140' et 'Outcome' est 1.
+
+\pause
+
+La mauvaise manière ... \textcolor{red}{à éviter!}
+```{r}
+contingency_prb <- prop.table(contingency)
+print(contingency_prb)
+```
+
+## Tableau de contingence (suite)
+
+La bonne manière ...
+```{r}
+total_negatives <- sum(contingency[, "0"])
+false_positives <- contingency["140 and above", "0"]
+alpha <- false_positives / total_negatives
+cat("Alpha (Type I error rate):", alpha, "\n")
+
+total_positives <- sum(contingency[, "1"])
+false_negatives <- contingency["Less than 140", "1"] 
+beta <- false_negatives / total_positives
+cat("Beta (Type II error rate):", beta, "\n")
+```
+
+## Types d'erreur (suite)
+
+### Conclusion
+
+- **\( \alpha \)** : Probabilité d'un faux positif (erreur de type I).
+- **\( \beta \)** : Probabilité d'un faux négatif (erreur de type II).
+- Équilibrer \( \alpha \) et \( \beta \) est crucial dans les tests d'hypothèses, car la diminution de l'un augmente souvent l'autre. Le choix de \( \alpha \) et \( \beta \) est influencé par le contexte de l'étude et l'importance relative des erreurs dans le scénario de recherche spécifique.
+
+# Test d'hypothèse
+
