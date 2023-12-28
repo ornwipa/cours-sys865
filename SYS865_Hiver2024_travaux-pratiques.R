@@ -50,3 +50,21 @@ lines(density_outcome_1, col = "red")
 # Add a legend
 legend("topright", legend = c("Tous", "Outcome 0", "Outcome 1"), 
        col = c("black", "blue", "red"), lty = 1, cex = 0.8)
+
+# TP du 31 janvier 2024
+# Subset data
+glucose0 <- subset(filtered_data, Outcome==0, is.na(Glucose)==0)$Glucose
+glucose1 <- subset(filtered_data, Outcome==1, is.na(Glucose)==0)$Glucose
+
+# Normality test
+shapiro.test(glucose0)
+shapiro.test(glucose1)
+
+# Homogeniety of variance test
+var.test(glucose0, glucose1)
+
+# t test
+t.test(glucose0, glucose1)
+
+# Wilcoxon text
+wilcox.test(glucose0, glucose1)

@@ -24,11 +24,10 @@ options(tinytex.verbose = TRUE)
   - Échantillonage
   - Théorème Central Limite
   - Intervalle de confiance
-- Test d'hypothèse
+- Tests d'hypothèse
   - Types d'erreur
-  - Test de moyenne
-  - Test de variance
-  - Test de deux populations
+  - Test sur la moyenne d'un échantillon
+  - Test sur la moyenne des deux échantillons
   - Test nonparamétrique
 
 # Récap et matière à réflexion
@@ -61,7 +60,7 @@ Enter the event code FFBQSE
 
 4. **Inférence statistique** : Ces méthodes permettent de calculer des erreurs d'échantillonnage, des intervalles de confiance et de réaliser des tests de significativité. Cela offre la possibilité de tirer des conclusions statistiques sur la population à partir de l'échantillon.
 
-![Inférence statistique](Slide-images\Population-Sample.png){width=30%, height=30%}
+![Inférence statistique](Slide-images\Population-Sample.png){width=25%, height=25%}
 
 ## Théorème Central Limite
 
@@ -200,9 +199,8 @@ legend("topright", legend = c("Outcome 0", "Outcome 1"), col = c("blue", "red"),
   - Intervalle de confiance
 - Test d'hypothèse
   - Types d'erreur
-  - Test de moyenne
-  - Test de variance
-  - Test de deux populations
+  - Test sur la moyenne d'un échantillon
+  - Test sur la moyenne des deux échantillons
   - Test nonparamétrique
 
 # Types d'erreur
@@ -214,11 +212,10 @@ legend("topright", legend = c("Outcome 0", "Outcome 1"), col = c("blue", "red"),
 \pause
 ... mais quelle est l'hypothèse nulle ?
 
-## Types d'erreur (suite)
-
+\pause
 Alors, voici un exemple ...
 
-![Erreur type I et II](Slide-images\Type-1-and-2-Error-reddit.png)
+![Erreur de type I et II](Slide-images\Type-1-and-2-Error-reddit.png){width=60%, height=30%}
 
 ## Erreur type I
 
@@ -236,7 +233,7 @@ La puissance d'un test, qui est \( 1 - \beta \), indique la capacité du test à
 
 Réduire \( \beta \) (augmentant ainsi la puissance) nécessite souvent d'augmenter la taille de l'échantillon ou la taille de l'effet.
 
-## Types d'erreur (suite)
+## Types d'erreur : mise en application
 
 En supposant que le paramètre "Glucose" est normalement distribué ...
 
@@ -367,13 +364,342 @@ beta <- false_negatives / total_positives
 cat("Beta (Type II error rate):", beta, "\n")
 ```
 
-## Types d'erreur (suite)
-
-### Conclusion
+## Types d'erreur : conclusion
 
 - **\( \alpha \)** : Probabilité d'un faux positif (erreur de type I).
 - **\( \beta \)** : Probabilité d'un faux négatif (erreur de type II).
 - Équilibrer \( \alpha \) et \( \beta \) est crucial dans les tests d'hypothèses, car la diminution de l'un augmente souvent l'autre. Le choix de \( \alpha \) et \( \beta \) est influencé par le contexte de l'étude et l'importance relative des erreurs dans le scénario de recherche spécifique.
 
-# Test d'hypothèse
+![Équilibre entre \(\alpha\) et \(\beta\)](Slide-images\erreurdetype.jpg){width=35%, height=35%}
 
+# Tests d'hypothèse
+
+Les tests d'hypothèses sont utilisés pour déterminer s'il existe suffisamment de preuves pour soutenir une croyance ou une théorie particulière sur un paramètre de population.
+\pause
+
+Exemples dans le génie mécanique :
+
+- Résistance des matériaux : Tester si un matériau composite possède une résistance à la traction supérieure à celle d'un matériau standard.
+
+- Efficacité thermique : Comparer l'efficacité thermique de deux liquides de refroidissement moteur différents.
+
+- Aérodynamique : Évaluer l'impact d'un nouveau design d'aile sur le rapport portance/traînée d'un aéronef. 
+
+- Analyse des Vibrations : Analyser si une nouvelle technique d'amortissement des vibrations réduit plus efficacement les vibrations qu'une méthode actuelle. 
+
+## Hypothèse nulle (\( H_0 \)) et alternative (\( H_1 \))
+
+L'**hypothèse nulle** est une déclaration indiquant qu'il n'y a aucun effet ou aucune différence dans un contexte particulier. C'est une position par défaut suggérant que toute différence ou signification observée dans un ensemble de données est purement due au hasard.
+\pause
+
+L'**hypothèse alternative** est ce que l'on souhaite prouver. C'est une déclaration qui indique une différence ou un effet. Cette hypothèse est acceptée uniquement lorsque les données fournissent suffisamment de preuves pour rejeter l'hypothèse nulle.
+
+## Démarches dans les tests d'hypothèses
+
+Dans les tests d'hypothèses, on commence par supposer que l'hypothèse nulle est vraie. Ensuite, en fonction des données de l'échantillon, on teste cette hypothèse. Si les preuves sont suffisamment fortes contre \(H_0\), on la rejette en faveur de \(H_1\). La décision est souvent prise en utilisant les valeurs \(p\) et des niveaux de signification prédéfinis (comme \(\alpha = 0,05\)).
+
+# Test sur la moyenne d'un échantillon
+
+### 1. Formulation des hypothèses
+
+\(H_0\) postule que la moyenne de la population (\(\mu\)) est égale à une valeur spécifique (\(\mu_0\)). 
+
+- Formellement, \(H_0:\mu=\mu_0\)
+
+\(H_1\) ou \(H_a\) suggère que la moyenne de la population diffère de cette valeur. 
+
+- \(H_0:\mu\neq\mu_0\) (test bilatéral), \(H_0:\mu>\mu_0\) (test unilatéral droit), ou \(H_0:\mu<\mu_0\) (test unilatéral gauche)
+
+\pause
+### 2. Collecte de données et calculs statistiques
+
+À partir des données collectées, calculer
+
+- la moyenne de l'échantillon (\( \overline{x} \)),
+
+- l'écart-type de l'échantillon (\( s \)) et
+
+- la taille de l'échantillon (\( n \)).
+
+## Test sur la moyenne d'un échantillon
+
+### 3. Choix du test statistique et calculs
+
+Utiliser un test (\( t \)) de Student pour comparer la moyenne de l'échantillon à la valeur spécifiée (\(\mu_0\)). 
+
+- \( t = \frac{\overline{x} - \mu_0}{s / \sqrt{n}} \).
+
+\pause
+### 4. Décision statistique et interprétation
+
+Déterminer une **valeur critique** par le niveau de signification \(\alpha\) (souvent 0,05). 
+
+\pause
+Si la valeur \( t \) est *en dehors des limites* de la valeur critique, rejeter \(H_0\).
+
+Rejeter \(H_0\) indique que la moyenne de la population diffère significativement de \(\mu_0\). 
+
+\pause
+Si \(H_0\) n'est pas rejetée, il n'y a pas suffisamment de preuves pour affirmer que la moyenne de la population est différente de \(\mu_0\).
+
+## Valeur critique
+
+La **valeur critique** est un seuil utilisé pour déterminer si la statistique de test calculée (comme une valeur \( t \) ou \( z \)) indique un résultat statistiquement significatif, à partir de laquelle on décide de rejeter ou non l'hypothèse nulle.
+
+\pause
+La valeur critique est déterminée en fonction du niveau de signification \( \alpha \) (souvent 0,05) et, pour un test \( t \), du nombre de degrés de liberté (\( df \) ou "degree of freedom" en anglais).
+
+\pause
+```{r}
+qt(1 - 0.05/2, df = 29)
+```
+
+\pause
+Pour un test \( z \), la valeur critique dépend de la distribution normale standard, \( N(0,1) \).
+
+\pause
+```{r}
+qnorm(0.975)
+```
+
+## Tests d'hypothèse avec la distribution t
+
+### Test bilatéral (à deux queues)
+
+- **Valeur critique** : \( t_{\alpha/2, \text{df}} \) et \( -t_{\alpha/2, \text{df}} \)
+- Rejeter de \(H_0\) si \( t_{\text{test}} > t_{\alpha/2, \text{df}} \) ou \( t_{\text{test}} < -t_{\alpha/2, \text{df}} \)
+
+### Test unilatéral gauche (à queue gauche)
+
+- **Valeur critique** : \( t_{\alpha, \text{df}} \)
+- Rejeter de \(H_0\) si \( t_{\text{test}} < -t_{\alpha, \text{df}} \)
+
+### Test unilatéral droit (à queue droite)
+
+- **Valeur critique** : \( t_{\alpha, \text{df}} \)
+- Rejeter de \(H_0\) si \( t_{\text{test}} > t_{\alpha, \text{df}} \)
+
+## Tests d'hypothèse avec la distribution t
+
+![Rejeter \(H_0\)](Slide-images\rejecth0.png){width=70%, height=70%}
+
+## Exemples avec R
+
+À partir de la base des données "Pima Indian Diabetes" ...
+
+Nous voulons tester si la population étudiée a un IMC moyen considéré comme normal, défini entre 18,5 et 24,9, avec un niveau de signification \(\alpha\) de 0,05.
+
+\pause
+**1. Formulation des hypothèses**
+
+**\(H_0\)** : La moyenne de l'IMC de la population est normale (c'est-à-dire, située dans la plage 18.5 - 24.9).
+
+- **Formellement**: \(H_0: 18.5 \leq \mu \leq 24.9\)
+
+**\(H_1\)** : La moyenne de l'IMC de la population n'est pas normale (c'est-à-dire, en dehors de la plage 18.5 - 24.9).
+
+- **Formellement**: \(H_1: \mu < 18.5\) ou \(\mu > 24.9\)
+
+## Exemples avec R (suite)
+
+**2. Collecte de données et calculs statistiques**
+
+```{r}
+filtered_bmi <- data$BMI[data$BMI>0 & !is.na(data$BMI)]
+mean_bmi <- mean(filtered_bmi)
+sd_bmi <- sd(filtered_bmi)
+n <- length(filtered_bmi)
+```
+
+\pause
+**3. Choix du test statistique et calculs**
+```{r}
+mu_0_lower <- 18.5
+mu_0_upper <- 24.9
+tstat_upper <- (mean_bmi-mu_0_lower) / (sd_bmi/sqrt(n))
+tstat_lower <- (mean_bmi-mu_0_upper) / (sd_bmi/sqrt(n))
+cat(tstat_lower, tstat_upper)
+```
+
+## Exemples avec R (suite)
+
+**4. Décision statistique et interprétation**
+
+Déterminer les valeurs critiques \( t_{-\alpha/2} \) et \( t_{\alpha/2} \)
+
+\pause
+```{r}
+alpha <- 0.05
+tcrit_lower <- qt(alpha/2, df = n-1)
+tcrit_upper <- qt(1 - alpha/2, df = n-1)
+cat(tcrit_lower, tcrit_upper)
+```
+
+\pause
+Les statistiques \(t\) sont supérieures aux valeurs critiques. Donc, rejeter \(H_0\) et conclure que l'IMC moyen n'est pas normal.
+
+# Test sur la moyenne des deux échantillons
+
+## Quelques exercices stimulants ...
+
+**Réponses anonymes**
+
+Go to [wooclap.com](wooclap.com)
+
+Enter the event code FFBQSE
+
+![Lien à l'activité sur Wooclap](Wooclap-31-janvier-2023.png){width=50%, height=50%}
+
+## Test t pour deux échantillons indépendants
+
+### 1. Hypothèses
+
+**\(H_0\)** : La moyenne de la première population (\( \mu_1 \)) est égale à la moyenne de la seconde population (\( \mu_2 \)). 
+
+- Formellement, \(H_0\): \( \mu_1 = \mu_2 \)
+
+**\(H_1\)** : Les moyennes des deux populations sont différentes.
+
+- Formellement, \(H_1\): \( \mu_1 \neq \mu_2 \)
+
+\pause
+### 2. Conditions du test \textcolor{red}{-- Important!}
+
+- Les échantillons sont indépendants.
+- Les échantillons sont suffisamment grands ou proviennent de distributions normalement distribuées.
+- Les variances des deux populations sont supposées égales.
+
+## Test t pour deux échantillons indépendants
+
+### 3. Statistique de test
+
+La statistique de test \(t\) est calculée comme suit :
+\[ t = \frac{\overline{x}_1 - \overline{x}_2}{\sqrt{s_p^2 \left(\frac{1}{n_1} + \frac{1}{n_2}\right)}} \]
+où \( \overline{x}_1 \) et \( \overline{x}_2 \) sont les moyennes des échantillons, \( n_1 \) et \( n_2 \) les tailles des échantillons, et \( s_p^2 \) la variance combinée.
+
+## Test t pour deux échantillons indépendants
+
+### 4. Décision et interprétation
+
+Comparer la valeur de \(t\) calculée à une valeur critique de la distribution \(t\).
+
+- Les degrés de liberté sont df = \( n_1 + n_2 - 2 \).
+
+- Le niveau de signification habituel : \( \alpha = 0.05 \).
+
+- Rejeter H0 si \( |t| > t_{\text{critique}} \).
+
+\pause
+Rejeter \(H_0\) indique une différence statistiquement significative entre les moyennes des deux populations. 
+
+Si \(H_0\) n'est pas rejetée, cela suggère l'absence de preuve suffisante d'une différence.
+
+## Test t pour deux échantillons appariés
+
+Pour des échantillons appariés, la méthode est similaire mais basée sur les différences appariées entre les deux ensembles de données.
+
+\pause
+Quelques exemples :
+
+- Mesurer la capacité de charge d'une batterie *avant* et *après* un nombre de cycles de charge pour déterminer la perte de capacité au fil du temps
+
+- Comparer la force d'un joint soudé *avant* et *après* un processus de vieillissement accéléré pour simuler l'effet à long terme de l'utilisation
+
+- Évaluer la préférence ou le confort d'utilisateurs avec deux designs différents d'un produit pour déterminer lequel est ergonomiquement supérieur (A|B testing)
+
+## Test t pour deux échantillons appariés
+
+### Hypothèse
+\[ H_0: \mu_{\text{diff}} = 0 \]
+\[ H_1: \mu_{\text{diff}} \neq 0 \]
+
+où \( \mu_{\text{diff}} \) est la moyenne des différences entre les paires.
+
+\pause
+
+### Statistique de test
+\[ t = \frac{\overline{d}}{s_d / \sqrt{n}} \]
+où \( \overline{d} \) est la moyenne des différences entre les deux mesures \( d_i = x_{i1} - x_{i2} \) pour chaque paire \( i \), \( s_d \) est l'écart-type des différences et \( n \) est le nombre de paires.
+
+## Exemples avec R
+
+À partir de la base des données "Pima Indian Diabetes" ...
+
+Nous voulons tester si les IMC des deux groupes (diabétiques et non diabétiques) sont égaux.
+
+\pause
+\textcolor{red}{Les deux groupes sont-ils indépendants ou appariés ?}
+
+\pause
+Séparer des données en deux groupes basés sur 'Outcome'
+```{r}
+filtered_data <- subset(data, BMI > 0)
+bmi_non_diabetic <- 
+  filtered_data$BMI[filtered_data$Outcome == 0]
+bmi_diabetic <- 
+  filtered_data$BMI[filtered_data$Outcome == 1]
+```
+
+## Exemples avec R (suite)
+
+Vérifier la condition d'homogénéité des variances
+```{r}
+var.test(bmi_non_diabetic, bmi_diabetic)
+```
+
+## Exemples avec R (suite)
+
+Effectuer le test t pour échantillons indépendants
+```{r}
+t.test(bmi_non_diabetic, bmi_diabetic)
+```
+
+## Attention!
+
+Les données ne sont pas normalement distribuées. Alors, il faut utiliser un test non paramétrique.
+```{r}
+shapiro.test(bmi_non_diabetic)
+shapiro.test(bmi_diabetic)
+```
+
+# Test non paramétrique
+
+## Test de Wilcoxon
+
+Le test de Wilcoxon, également connu sous le nom de test de rang signé de Wilcoxon, est un test \textcolor{brown}{non paramétrique} utilisé en statistique pour comparer deux échantillons appariés ou pour tester des différences dans un seul échantillon apparié ou répété. Il est utilisé lorsque les conditions pour un test \(t\) paramétrique ne sont pas remplies, notamment \textcolor{brown}{lorsque les données ne suivent pas une distribution normale}.
+\pause
+
+- **Test de Rang Somme de Wilcoxon** : Utilisé pour comparer deux échantillons indépendants. Ce test est également connu sous le nom de test de Mann-Whitney.
+
+- **Test de Wilcoxon pour Échantillons Appariés** : Utilisé pour comparer deux échantillons appariés ou mesures répétées sur un même groupe (par exemple, avant et après un traitement).
+
+## Exemples avec R
+
+Avec les mêmes données ...
+```{r}
+wilcox.test(bmi_non_diabetic, bmi_diabetic)
+```
+
+# Résumé des démarches
+
+**Réponses anonymes**
+
+Go to [wooclap.com](wooclap.com)
+
+Enter the event code FFBQSE
+
+![Lien à l'activité sur Wooclap](Wooclap-31-janvier-2023.png){width=50%, height=50%}
+
+## Réponse correcte
+
+![Démarches de test d'hypothèse](Slide-images\sortingcorrect.JPG){width=80%, height=80%}
+
+# Travaux pratiques
+
+Pour chacun des neuf paramètres dans la base de données sur les diabètes ...
+
+1. Vérifier les conditions pour utiliser un test \(t\)
+
+2. Effectuer le test \(t\) ou Wilcoxon pour comparer les valeurs entre les deux groupes (non diabétique et diabétique)
+
+3. Interpréter les résultats
