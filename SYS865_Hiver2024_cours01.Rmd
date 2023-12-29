@@ -42,50 +42,44 @@ Enter the event code DOGLGJ
 
 # Introduction au cours
 
-## Méthodes pédagogiques et contenu
+## Contenu
 
-- Travaux pratiques basés sur des projets en équipe
   - Variables aléatoires et distribution de probabilités
   - Échantillonage et estimation des paramètres
   - Intervalles de confiance
   - Tests d’hypothèses des moyennes et des variances
+  - Erreurs et puissance statistique
   - Correlations et associations
   - Régression linéaire
   - Régression logistique
   
-<br>
+## Méthodes d'évaluation
 
-- Programmation R
-
-## Méthodes d'évaluation et dates importantes
-
-- Projet 1 : Tests d'hypothèses (14 février 2024) 40%
+- Projet 1 : Tests d'hypothèses
   - Analyse exploratoire des données
-  - Tests des suppositions pour les variables paramétriques
+  - Tests des conditions pour les variables paramétriques
   - Tests d'hypothèses des moyennes et des variances pour un ou plusieurs échantillons
 
 <br>
 
-- Projet 2 : Association des variables (21 mars 2024) 40%
+- Projet 2 : Association des variables
   - Régression linéaire ou logistique
   - Techniques de l'ajustement pour les facteurs confondants ou de la stratification si nécessaire
   
 <br>
 
-- Projet 3 : Tous ensembles (10 avril 2024) 20%
+- Travaux pratiques chaque séance, sauf la première
 
-## Répartition des notes des projets
+## Répartition des notes
 
-- Projet 1 et 2
-  - 25 pts. pour les travaux (rapports écrits)
-  - 10 pts. pour la présentation + les Q-et-R
-  - 5 pts. pour l'évaluation par les pairs
+- Projet en équipe
+  - 30 pts. x2 projets pour les travaux (présentation)
+  - 5 pts. x2 projets pour l'évaluation par les pairs
 
 <br>
 
-- Projet 3
-  - 15 pts. pour la présentation du progrès pendant deux périodes de l'accompagnement du projet
-  - 5 pts. pour l'évaluation par les pairs
+- Travaux pratiques individuels
+  - 30 pts. pour les travaux (rapports écrits + codes)
 
 <br>
 
@@ -96,17 +90,17 @@ Grille d’autoévaluation et d’évaluation par les pairs (en p.j.)
 10 janvier : introduction, variables aléatoires \
 17 janvier : espérance, variance, indépendance \
 24 janvier : échantillonage, intervalle de confiance \
-31 janvier : test d'hypothèse \
-07 février : accompagnement du projet \
-14 février : **présentation du projet 1** \
-21 février : correlation, régression linéaire \
-28 février : facteurs confondants, régression logistique \
-07 mars : *semaine de relache, il n'y a pas du cours* \
-14 mars : accompagnement du projet \
-21 mars : **présentation du projet 2** \
-28 mars : accompagnement du projet \
+31 janvier : erreurs en statistique et test d'hypothèse \
+07 février : test d'hypothèse + accompagnement du projet \
+14 février : test d'hypothèse + accompagnement du projet \
+21 février : puissance statistique \
+28 février : **présentation du projet 1** \
+06 mars : *semaine de relache, il n'y a pas de cours* \
+13 mars : correlation, régression linéaire \
+20 mars : facteurs confondants, régression logistique \
+27 mars : accompagnement du projet \
 03 avril : accompagnement du projet \
-10 avril : **présentation du projet 3** \
+10 avril : **présentation du projet 2** \
 
 # Information supplémentaire
 
