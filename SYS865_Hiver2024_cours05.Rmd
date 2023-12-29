@@ -1,0 +1,308 @@
+---
+title: "SYS865 Inférence statistique avec programmation R"
+author: "Ornwipa Thamsuwan"
+date: "7 février 2024"
+# date: "`r format(Sys.time(), '%d-%m-%Y')`"
+output:
+  beamer_presentation: 
+    slide_level: 2
+    theme: "Goettingen"
+    colortheme: "crane"
+    fonttheme: "structurebold"
+header-includes:
+- \setbeamertemplate{navigation symbols}{}
+- \setbeamertemplate{footline}[page number]
+---
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+# Recap
+
+Les derniers cours ...
+
+- Variables aléatoires
+  - Variables discrètes ou continues
+  - Fonction de masse ou de densité de probabilité
+  - Fonction de répartition de probabilité
+  - Espérance
+  - Variance
+  - Loi jointe, covariance et indépendance
+- Échantillonage
+  - Méthodes d'échantillonage et taille d'échantillon
+  - Théorème Central Limite
+- Inférence statistique
+  - Intervalle de confiance
+  - Types d'erreur
+  - Tests d'hypothèse
+    - Test sur la moyenne d'un échantillon
+    - Test sur la moyenne des deux échantillons
+    - Test nonparamétrique
+
+# Plan de la séance
+
+Dans ce cours ...
+
+- Valeur p
+- Tests d'hypothèse vs. Intervalle de confiance
+- Début du projet 1
+
+Les matières non abordées dans ce cours ...
+
+- ANOVA (déjà enseigné dans le cours SYS814 : Méthodologies expérimentales pour ingénieur)
+
+# Valeur p
+
+Le p-value est la probabilité d'obtenir un effet au moins aussi extrême que celui observé dans vos données d'échantillon, en supposant que l'hypothèse nulle (\(H_0\)) soit vraie. 
+
+![Valeur p](Slide-images\p-value.png){width=50%, height=50%}
+
+## Valeur p
+
+**Seuil et interprétation** :
+
+Le p-value est comparé à un niveau de signification prédéfini (\(\alpha\), souvent 0,05). 
+
+- Un p-value inférieur à \(\alpha\) suggère de rejeter \(H_0\) en faveur de l'alternative.
+
+\pause
+
+- Cependant, cela ne signifie pas que \(H_0\) est fausse. Il suggère simplement que les données observées sont peu probables sous \(H_0\).
+
+## Valeur p
+
+**Idées fausses et mauvais usages** :
+
+- Une idée fausse commune est d'équivaloir un petit p-value à une grande taille d'effet ou à une signification pratique.
+
+\pause
+
+- Le p-value ne fournit pas la probabilité des données compte tenu des deux hypothèses (nulle et alternative) ; il ne l'évalue que sous \(H_0\).
+
+## Valeur p
+
+**Métriques complémentaires** :
+
+La taille de l'effet et les intervalles de confiance devraient accompagner les p-values pour fournir une compréhension plus complète des résultats.
+
+![Taille de l'effet](Slide-images\Effect_size.png){width=40%, height=40%}
+
+Effect_size.png
+
+# Tests d'hypothèse vs. Intervalle de confiance
+
+## Base de données utilisée
+
+![Iris dans une peinture de Vincent van Gogh](Slide-images\Irises-Vincent_van_Gogh.jpg){width=40%, height=40%}
+
+Fisher, R.A. (1936) The use of multiple measurements in taxonomic problems. *Annals of Eugenics*, **7**, Part II, 179–188. doi:10.1111/j.1469-1809.1936.tb02137.x.
+
+Les données ont été collectées par Anderson, Edgar (1935). The irises of the Gaspe Peninsula, *Bulletin of the American Iris Society*, **59**, 2–5.
+
+## Base de données utilisée
+
+![Fleur d'Iris et les paramètres de "Sepal" et "Petal"](Slide-images\sepalpetal.jpg){width=40%, height=40%}
+
+```{r}
+cat(names(iris))
+```
+
+## Base de données utilisée
+
+![Espèces d'Iris](Slide-images\iris_flower_dataset.png){width=40%, height=40%}
+
+```{r}
+summary(iris$Species)
+```
+
+## Intervalle de confiance
+
+Pour calculer les intervalles de confiance pour les quatre paramètres (`Sepal.Length`, `Sepal.Width`, `Petal.Length`, `Petal.Width`) de chacune des trois espèces d'Iris, quelles sont les démarches ?
+\pause
+
+**R code** :
+```{r}
+calculate_ci <- function(data, level = 0.95) {
+  n <- length(data)
+  mean <- mean(data)
+  stderr <- sd(data)/sqrt(n)
+  error_margin <- qt(level/2 + 0.5, df = n-1)*stderr
+  lower_ci <- mean - error_margin
+  upper_ci <- mean + error_margin
+  return(c(lower_ci, upper_ci))
+}
+```
+
+## Intervalle de confiance (suite)
+
+Nous utilisons la fonction `by` pour appliquer ce calcul à chaque sous-ensemble de l'ensemble de données Iris, divisé par `Species`. 
+
+La fonction `apply` est utilisé pour calculer ces statistiques pour chaque colonne (paramètre) de ces sous-ensembles.
+
+**R code** :
+```{r}
+ci_results <- by(iris[, 1:4], 
+                 iris$Species, 
+                 function(subdata) {
+  apply(subdata, 2, calculate_ci)
+})
+```
+
+## Intervalle de confiance (suite)
+
+```{r}
+ci_results
+```
+
+## Test d'hypothèse
+
+1. La largeur des pétales d'Iris virginica est-elle égale à 2,0 ?
+2. Les largeurs de sépales d'Iris setosa et d'Iris versicolor sont-elles égales ?
+3. La longueur des sépales et la longueur des pétales d'Iris setosa sont-elles égales ?
+
+## Test d'hypthèse (suite)
+
+1. La largeur des pétales d'Iris virginica est-elle égale à 2,0 ?
+
+```{r}
+virginica <- subset(iris, Species == "virginica")
+t.test(virginica$Petal.Width, mu = 2.0)
+```
+
+## Test d'hypthèse (suite)
+
+2. Les largeurs de sépales d'Iris setosa et d'Iris versicolor sont-elles égales ? (Les variances sont homogènes.)
+
+```{r}
+setosa <- subset(iris, Species == "setosa")
+versicolor <- subset(iris, Species == "versicolor")
+var.test(setosa$Sepal.Width, versicolor$Sepal.Width)
+```
+
+## Test d'hypthèse (suite)
+
+Les données sont normalement distribuées.
+
+```{r}
+shapiro.test(setosa$Sepal.Width)
+shapiro.test(versicolor$Sepal.Width)
+```
+
+## Test d'hypthèse (suite)
+
+```{r}
+t.test(setosa$Sepal.Width, versicolor$Sepal.Width)
+```
+
+## Test d'hypthèse (suite)
+
+3. La longueur des sépales et la longueur des pétales d'Iris setosa sont-elles égales ?
+
+```{r}
+t.test(setosa$Sepal.Length, setosa$Petal.Length, 
+       paired = TRUE)
+```
+
+## Intervalle de confiance (retour)
+
+1. La largeur des pétales d'Iris virginica est-elle égale à 2,0 ?
+\pause
+
+```{r, echo=FALSE}
+virginica_petal_width <- iris$Petal.Width[iris$Species == "virginica"]
+ci_virginica_petal_width <- calculate_ci(virginica_petal_width)
+cat(sprintf("IC de Iris Virginica Petal Width = (%.2f, %.2f)", 
+            ci_virginica_petal_width[1], ci_virginica_petal_width[2]))
+```
+
+- \textcolor{purple}{L'IC couvre la valeur 2,0.}
+
+\pause
+
+2. Les largeurs de sépales d'Iris setosa et d'Iris versicolor sont-elles égales ?
+\pause
+
+```{r, echo=FALSE}
+setosa_sepal_width <- iris$Sepal.Width[iris$Species == "setosa"]
+ci_setosa_sepal_width <- calculate_ci(setosa_sepal_width)
+cat(sprintf("IC de Iris Setosa Sepal Width = (%.2f, %.2f)\n", 
+            ci_setosa_sepal_width[1], ci_setosa_sepal_width[2]))
+
+versicolor_sepal_width <- iris$Sepal.Width[iris$Species == "versicolor"]
+ci_versicolor_sepal_width <- calculate_ci(versicolor_sepal_width)
+cat(sprintf("IC de Iris Versicolor Sepal Width = (%.2f, %.2f)", 
+            ci_versicolor_sepal_width[1], ci_versicolor_sepal_width[2]))
+```
+
+- \textcolor{purple}{Les deux ICs ne se chevauchent pas.}
+
+## Intervalle de confiance (retour)
+
+3. La longueur des sépales et la longueur des pétales d'Iris setosa sont-elles égales ?
+\pause
+
+```{r, echo=FALSE}
+setosa_sepal_length <- iris$Sepal.Length[iris$Species == "setosa"]
+ci_setosa_sepal_length <- calculate_ci(setosa_sepal_length)
+cat(sprintf("IC de Iris Setosa Sepal Length = (%.2f, %.2f)\n", 
+            ci_setosa_sepal_length[1], ci_setosa_sepal_length[2]))
+
+setosa_petal_length <- iris$Petal.Length[iris$Species == "setosa"]
+ci_setosa_petal_length <- calculate_ci(setosa_petal_length)
+cat(sprintf("IC de Iris Setosa Petal Length = (%.2f, %.2f)", 
+            ci_setosa_petal_length[1], ci_setosa_petal_length[2]))
+```
+
+- \textcolor{purple}{Est-ce que c'est correct ?}
+
+\pause
+Non, il faut soustraire la longueur des sépales et la longueur des pétales paire par paire et calculer l'IC de cette différence.
+```{r, echo=FALSE}
+setosa_differences <- iris$Sepal.Length[iris$Species == "setosa"] - iris$Petal.Length[iris$Species == "setosa"]
+ci_setosa_differences <- calculate_ci(setosa_differences)
+cat(sprintf("IC de la différence = (%.2f, %.2f)", 
+            ci_setosa_differences[1], ci_setosa_differences[2]))
+```
+
+- \textcolor{purple}{L'IC de la différence ne couvre pas 0. Donc, il n'y a pas de différence significative.}
+
+# Travaux pratiques
+
+En divisant la base de données "Pima Indian Diabetes" en groupe de non diabétiques et diabétiques, pour chacun des huit paramètres (`Pregnancies`, `Glucose`, `BloodPressure`, `SkinThickness`, `Insulin`, `BMI`, `DiabetesPedigreeFunction` et `Age`) ...
+
+1. Utilisant les résultats de TP de la séance 3, les intervalles de confiance des deux groupes (`Outcome`=0 et `Outcome`=1) se chevauchent-ils ?
+
+2. Utilisant les résultats de TP de la séance 4, l'interprétation du test d'hypothèse comparant des deux groupes (`Outcome`=0 et `Outcome`=1) correspond-elle à celle de l'IC ?
+
+## Plan de la séance (retour)
+
+Dans ce cours ...
+
+- Valeur p
+- Tests d'hypothèse (sur la moyenne) vs. Intervalle de confiance
+- Début du projet 1
+
+Les prochains cours ...
+
+- Tests pour les conditions des statistiques paramétriques  
+  - Test d'hypothèse sur la variance des deux échantillons
+  - Tests de normalité
+- Puissance statistique
+
+# Projet 1
+
+Vous devez faire une présentation de votre projet, partager votre écran en expliquant et exécutant vos codes R devant vos collègues et interpréter les résultats.
+
+Le project doit contenir les éléments suivants :
+
+- Objectifs du projet
+  - Justifiez vos raisons
+- Sources des données
+  - Soit nouvellement collectées ou à partir d'un dépôt existant
+- Visualisation des données
+- Espérance et variance
+- Intervalle de confiance
+- Test d'hypothèse
+- Erreur et puissance statistique
+- Interprétation
