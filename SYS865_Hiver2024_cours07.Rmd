@@ -1,0 +1,232 @@
+---
+title: "SYS865 Inférence statistique avec programmation R"
+author: "Ornwipa Thamsuwan"
+date: "21 février 2024"
+# date: "`r format(Sys.time(), '%d-%m-%Y')`"
+output:
+  beamer_presentation: 
+    slide_level: 2
+    theme: "Goettingen"
+    colortheme: "crane"
+    fonttheme: "structurebold"
+header-includes:
+- \setbeamertemplate{navigation symbols}{}
+- \setbeamertemplate{footline}[page number]
+---
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+# Recap
+
+- Objectifs de l'étude
+- Formulation d'hypothèse
+- Collecte des données : plan d'échantillonage
+- Analyse des données : **choix du test statistique**
+- Décision et interprétation
+
+\pause
+\textcolor{brown}{Comment choisir le test statistique ?}
+
+## Inférence statistique
+
+**Les conditions pour les choix du test**
+
+- Test de normalité (Shapiro-Wilk)
+\pause
+- Test de homogénéité des variances
+  - Test F pour les données \textcolor{brown}{normalement distribuées}
+  - Test de Levene
+
+\pause
+**Les paramètres à étudier**
+
+- La moyenne d'un échantillon ou la différence entre deux échantillons appariés
+  - Test t avec `paired=TRUE` pour les données \textcolor{brown}{normalement distribuées}
+  - Test de Wilcoxon pour échantillons appariés
+
+\pause
+- Les moyennes des deux échantillons indépendants
+  - Test t par défault pour les données \textcolor{brown}{normalement distribuées}
+  - Test de rang somme de Wilcoxon
+
+## Erreur statistique (retour)
+
+Erreur type I (\(\alpha\)) : Rejeter \(H_0\) quand \(H_0\) est vraie.
+
+Erreur type II (\(\beta\)) : Ne pas rejeter \(H_0\) quand \(H_0\) est fausse.
+
+```{r, echo=FALSE}
+data <- read.csv("diabetes.csv")
+filtered_data <- subset(data, Glucose > 0)
+
+# Calculate mean and standard deviation for each Outcome group
+mean_glucose_0 <- mean(subset(filtered_data, Outcome == 0)$Glucose, na.rm = TRUE)
+sd_glucose_0 <- sd(subset(filtered_data, Outcome == 0)$Glucose, na.rm = TRUE)
+
+mean_glucose_1 <- mean(subset(filtered_data, Outcome == 1)$Glucose, na.rm = TRUE)
+sd_glucose_1 <- sd(subset(filtered_data, Outcome == 1)$Glucose, na.rm = TRUE)
+
+# Define a sequence of glucose values for plotting
+glucose_range <- seq(min(filtered_data$Glucose, na.rm = TRUE), max(filtered_data$Glucose, na.rm = TRUE), length.out = 200)
+
+# Calculate normal distribution values for each group
+normal_values_0 <- dnorm(glucose_range, mean = mean_glucose_0, sd = sd_glucose_0)
+normal_values_1 <- dnorm(glucose_range, mean = mean_glucose_1, sd = sd_glucose_1)
+
+# Plot the normal probability distributions
+plot(glucose_range, normal_values_0, type = 'l', col = 'blue', lwd = 2, 
+     main = 'Normal Probability Distributions of Glucose by Outcome', 
+     xlab = 'Concentration de Glucose Plasmatique à 2h (GTIT) [mg/dL]', 
+     ylab = 'Density', ylim = c(0, max(normal_values_0, normal_values_1)))
+lines(glucose_range, normal_values_1, col = 'red', lwd = 2)
+
+# Add a vertical line at x=140
+abline(v = 140, col = "black", lwd = 2, lty = 2)
+
+# Highlight the area under the blue curve to the right of x=140 (Type I error area for Outcome 0)
+x_area <- glucose_range[glucose_range > 140]
+y_area <- dnorm(x_area, mean = mean_glucose_0, sd = sd_glucose_0)
+polygon(c(140, x_area, max(glucose_range)), c(0, y_area, 0), col = "lightblue", border = NA)
+
+# Highlight the area under the red curve to the left of x=140 (Type II error area for Outcome 1)
+x_area <- glucose_range[glucose_range < 140]
+y_area <- dnorm(x_area, mean = mean_glucose_1, sd = sd_glucose_1)
+polygon(c(min(glucose_range), x_area, 140), c(0, y_area, 0), col = "lightcoral", border = NA)
+
+# Add a legend
+legend("topright", legend = c("Outcome 0", "Outcome 1", "Erreur type I","Erreur Type II"), 
+       col = c("blue", "red", "lightblue", "lightcoral"), lty = 1, lwd = 2, bty = "n")
+```
+
+## Erreur statistique (retour)
+
+"Power" (\(1-\beta\)) : Correctement rejeter \(H_0\) quand \(H_0\) est fausse, ou quand \(H_1\) est vraie. 
+
+```{r, echo=FALSE}
+# Plot the normal probability distributions
+plot(glucose_range, normal_values_0, type = 'l', col = 'blue', lwd = 2, 
+     main = 'Normal Probability Distributions of Glucose by Outcome', 
+     xlab = 'Concentration de Glucose Plasmatique à 2h (GTIT) [mg/dL]', 
+     ylab = 'Density', ylim = c(0, max(normal_values_0, normal_values_1)))
+lines(glucose_range, normal_values_1, col = 'red', lwd = 2)
+
+# Add a vertical line at x=140
+abline(v = 140, col = "black", lwd = 2, lty = 2)
+
+# Highlight the area under the red curve to the right of x=140
+x_area <- glucose_range[glucose_range > 140]
+y_area <- dnorm(x_area, mean = mean_glucose_1, sd = sd_glucose_1)
+polygon(c(140, x_area, max(glucose_range)), c(0, y_area, 0), col = "turquoise", border = NA)
+
+# Add a legend
+legend("topright", legend = c("Outcome 0", "Outcome 1", "Power = 1 - Erreur Type II"), 
+       col = c("blue", "red", "turquoise"), lty = 1, lwd = 2, bty = "n")
+```
+
+# Puissance statistique
+
+![Tableau de contingence](Slide-images\contingencytable.jpg){width=70%, height=70%}
+
+## Calcul de la puissance statistique
+
+1. Définir les hypothèses et décider du type de test t
+
+- **Hypothèse nulle (\(H_0\))**: Il n'existe aucune différence entre les groupes que vous comparez.
+- **Hypothèse alternative (\(H_1\))**: Il existe une différence significative.
+- Décidez si l'on réalise un test t unilatéral (si l'on attend une différence dans une direction spécifique) ou bilatéral (en cas où les différences dans les deux directions sont pertinentes).
+
+\pause
+
+2. Choisir un niveau de signification (\(\alpha\)). Typiquement, \(\alpha = 0.05\).
+
+\pause
+
+3. Supposer que la taille de l'échantillon (n) pour chaque groupe est donnée.
+
+## Calcul de puissance statistique
+
+4. Déterminer la taille de l'effet
+
+La taille de l'effet de Cohen's d est définie comme:
+
+\[ d = \frac{\mu_1 - \mu_2}{SD_{\text{poolisée}}} \]
+
+Où \(\mu_1\) et \(\mu_2\) sont les moyennes des deux groupes, et \(SD_{\text{poolisée}}\) est l'écart-type poolisé, calculé en fonction des écarts-types des deux groupes.
+
+\pause
+
+\[ SD_{\text{poolisée}} = \sqrt{\frac{(n_1 - 1) \times SD_1^2 + (n_2 - 1) \times SD_2^2}{n_1 + n_2 - 2}} \]
+
+Où \( n_1 \) et \( n_2 \) sont les tailles d'échantillon des deux groupes, et \( SD_1 \) et \( SD_2 \) sont les déviations standard des deux groupes.
+
+## Calcul de la puissance statistique
+
+5. Calculer ou estimer la puissance (\(1-\beta\)) avec R
+
+\pause
+Paramètres
+```{r}
+effect_size <- 0.5
+n1 <- 30
+n2 <- 40
+alpha <- 0.05
+```
+
+\pause
+Calcul des degrés de liberté
+```{r}
+df <- n1 + n2 - 2
+df
+```
+
+## Calcul de la puissance statistique
+
+Calcul de la valeur t critique
+```{r}
+t_critical <- qt(1 - alpha / 2, df)
+t_critical
+```
+
+La fonction `qt()` fournit le quantile de la distribution t.
+
+## Calcul de la puissance statistique
+
+Calcul du paramètre de non-centralité
+```{r}
+ncp <- effect_size * sqrt((n1 * n2) / (n1 + n2))
+ncp
+```
+
+Le paramètre de non-centralité représente à quel point l'effet réel est éloigné de l'hypothèse nulle dans le contexte d'une hypothèse alternative spécifique.
+
+Le paramètre de non-centralité est ajusté pour les tailles d'échantillon inégales en utilisant la formule suivante :
+\[ ncp = \text{effect size} \times \sqrt{\frac{n_1 \times n_2}{n_1 + n_2}} \]
+
+## Calcul de la puissance statistique
+
+Calcul de la puissance
+```{r}
+power <- 1 - pt(t_critical, df, ncp)
+power
+```
+
+La fonction `pt()` donne la fonction de répartition (c'est-à-dire, la probabilité cumulée) pour la distribution t.
+
+## Puissance statistique
+
+Si nous n'avons pas encore collecté de données ...
+
+Et nous voulons connaître la taille de l'échantillon pour atteindre une puissance statistique prédéfinie ...
+
+# Détermination de la taille d'échantillon
+
+
+
+
+# D'autre option du logiciel : G*Power
+
+**Lien pour le télécharger** : [https://www.psychologie.hhu.de/arbeitsgruppen/allgemeine-psychologie-und-arbeitspsychologie/gpower](https://www.psychologie.hhu.de/arbeitsgruppen/allgemeine-psychologie-und-arbeitspsychologie/gpower)
+
+![G*Power](Slide-images\csm_GPowerIcon.png){width=15%, height=15%}
