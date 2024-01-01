@@ -199,9 +199,9 @@ ncp <- effect_size * sqrt((n1 * n2) / (n1 + n2))
 ncp
 ```
 
-Le paramètre de non-centralité représente à quel point l'effet réel est éloigné de l'hypothèse nulle dans le contexte d'une hypothèse alternative spécifique.
+Le paramètre de non-centralité **`ncp`** représente à quel point l'effet réel est éloigné de l'hypothèse nulle dans le contexte d'une hypothèse alternative spécifique.
 
-Le paramètre de non-centralité est ajusté pour les tailles d'échantillon inégales en utilisant la formule suivante :
+Le **`ncp`** est ajusté pour les tailles d'échantillon inégales en utilisant la formule suivante :
 \[ ncp = \text{effect size} \times \sqrt{\frac{n_1 \times n_2}{n_1 + n_2}} \]
 
 ## Calcul de la puissance statistique
@@ -214,6 +214,49 @@ power
 
 La fonction `pt()` donne la fonction de répartition (c'est-à-dire, la probabilité cumulée) pour la distribution t.
 
+## Facteurs importants
+
+**Taille d'échantillon**
+
+```{r}
+n1 <- 120 # augmenté de 30
+n2 <- 120 # augmenté de 40
+```
+\pause
+Tout en fixant d'autres paramètres, la puissance augmente à
+```{r, echo=FALSE}
+effect_size <- 0.5
+df <- n1 + n2 - 2
+t_critical <- qt(1 - alpha / 2, df)
+ncp <- effect_size * sqrt((n1 * n2) / (n1 + n2))
+power <- 1 - pt(t_critical, df, ncp)
+power
+```
+\pause
+
+**Taille d'effet**
+
+```{r}
+effect_size <- 1 # augmenté de 0.5
+```
+\pause
+Tout en fixant d'autres paramètres, la puissance augmente à
+```{r, echo=FALSE}
+n1 <- 30
+n2 <- 40
+df <- n1 + n2 - 2
+t_critical <- qt(1 - alpha / 2, df)
+ncp <- effect_size * sqrt((n1 * n2) / (n1 + n2))
+power <- 1 - pt(t_critical, df, ncp)
+power
+```
+
+## Facteurs importants
+
+![Puissances statistiques sous différentes tailles d'effet et tailles d'échantillon](Slide-images\41592_2013_Article_BFnmeth2738_Fig4_HTML.jpg)
+
+- **Référence** : Krzywinski, M., Altman, N. Power and sample size. *Nat Methods* **10**, 1139–1140 (2013). https://doi.org/10.1038/nmeth.2738
+
 ## Puissance statistique
 
 Si nous n'avons pas encore collecté de données ...
@@ -222,11 +265,145 @@ Et nous voulons connaître la taille de l'échantillon pour atteindre une puissa
 
 # Détermination de la taille d'échantillon
 
+Fixer les paramètres suivants :
 
+- Taille de l'effet (d de Cohen) : il s'agit de la différence anticipée entre les moyennes de deux groupes divisée par l'écart type.
 
+- Niveau de signification \(\alpha\) = 0,05.
+
+- Puissance souhaitée \(1-\beta\) = 0,80.
+
+```{r}
+effect_size <- 0.5  # par ex. (mu1 - mu2) / sigma
+alpha <- 0.05
+power <- 0.80 
+```
+\pause
+
+Trouver la **valeur t critique** pour le niveau de signification, puis utiliser la **distribution t non centrale** pour calculer la puissance.
+
+## R code
+
+```{r}
+calculate_sample_size <- function(d, power, alpha) {
+  n <- 2   # petit n sera incrémenté
+  while(TRUE) {
+    t_crit <- qt(1 - alpha/2, df = 2*n - 2)
+    ncp <- sqrt(n) * d
+    beta <- pt(t_crit, df = 2*n - 2, ncp = ncp) - 
+            pt(-t_crit, df = 2*n - 2, ncp = ncp)
+    current_power <- 1 - beta
+    if (current_power >= power) {
+      return(n)
+    }
+    n <- n + 1
+  }
+}
+```
+## R code (suite)
+
+L'expression `pt(t_crit, df = 2*n - 2, ncp = ncp)` calcule la probabilité (sous la distribution t non-centrale) d'observer une valeur t inférieure ou égale à `t_crit`.
+
+De même, `pt(-t_crit, df = 2*n - 2, ncp = ncp)` calcule la probabilité d'observer une valeur t inférieure ou égale à `-t_crit`.
+
+La différence entre ces deux probabilités (`pt(t_crit, df = 2*n - 2, ncp = ncp) - pt(-t_crit, df = 2*n - 2, ncp = ncp)`) donne essentiellement la probabilité d'une erreur de Type II (\(\beta\)), qui est la probabilité de ne pas rejeter l'hypothèse nulle lorsque l'hypothèse alternative est vraie.
+\pause
+
+```{r}
+calculate_sample_size(effect_size, power, alpha)
+```
+
+## Plus d'exemples
+
+Utiliser le célèbre jeu de données iris, en nous concentrant sur les largeurs de sépales des espèces versicolor et virginica.
+
+```{r}
+versicolor <- 
+  subset(iris, Species=="versicolor")$Sepal.Width
+virginica <- 
+  subset(iris, Species=="virginica")$Sepal.Width
+```
+
+![Iris dans une peinture de Vincent van Gogh](Slide-images\Irises-Vincent_van_Gogh.jpg){width=40%, height=40%}
+
+## Préparation des données préliminaires
+
+Prendre aléatoirement 5 points de données pour chacune des deux espèces (`versicolor` et `virginica`) dans la variable `Sepal.Width`.
+
+```{r, echo=FALSE}
+set.seed(123) # For reproducibility
+```
+```{r}
+sample_versicolor <- sample(versicolor, 5)
+sample_versicolor
+```
+```{r}
+sample_virginica <- sample(virginica, 5)
+sample_virginica
+```
+
+## Calcul de la puissance statistique
+
+```{r}
+# Calculate means and standard deviations
+mean_versicolor <- mean(sample_versicolor)
+mean_virginica <- mean(sample_virginica)
+sd_versicolor <- sd(sample_versicolor)
+sd_virginica <- sd(sample_virginica)
+
+# Calculate pooled standard deviation
+n <- 5 # sample size for each group
+pooled_sd <- 
+  sqrt(((n-1)*sd_versicolor^2 + 
+          (n-1)*sd_virginica^2) / (n+n-2))
+
+# Calculate effect size (Cohen's d)
+effect_size <- (mean_versicolor-mean_virginica)/pooled_sd
+effect_size
+```
+
+## Calcul de la puissance statistique (suite)
+
+```{r}
+# Calculate power using the effect size
+alpha <- 0.05
+t_critical <- qt(1 - alpha/2, df = 2*n - 2)
+ncp <- effect_size * sqrt(n/2)
+power <- 1 - 
+  pt(t_critical, df = 2*n - 2, ncp = ncp) +
+  pt(-t_critical, df = 2*n - 2, ncp = ncp)
+power
+```
+\pause
+
+Quelle serait la taille minimale de l'échantillon afin d'avoir une puissance d'au moins 0,80 ?
+\pause
+
+```{r}
+desired_power <- 0.80
+calculate_sample_size(effect_size, desired_power, alpha)
+```
+
+## Détermination de la taille d'échantillon
+
+"The larger sample size, the more confidence you can be that your sample mean is a good representation of your population mean.
+
+In other words, the N justifies the means."
 
 # D'autre option du logiciel : G*Power
 
+![G*Power](Slide-images\csm_GPowerIcon.png){width=25%, height=25%}
+
 **Lien pour le télécharger** : [https://www.psychologie.hhu.de/arbeitsgruppen/allgemeine-psychologie-und-arbeitspsychologie/gpower](https://www.psychologie.hhu.de/arbeitsgruppen/allgemeine-psychologie-und-arbeitspsychologie/gpower)
 
-![G*Power](Slide-images\csm_GPowerIcon.png){width=15%, height=15%}
+En tous cas, en utilisant G*Power, \textcolor{brown}{il faut comprendre et précalculer le paramètre de noncentralité `ncp` (ou la notion de taille d'effet).}
+
+# Travaux pratiques
+
+À partir de la base de données "Pima Indian Diabetes", supposant que \(\alpha=0.05\) pour chacun des huit paramètres (`Pregnancies`, `Glucose`, `BloodPressure`, `SkinThickness`, `Insulin`, `BMI`, `DiabetesPedigreeFunction` et `Age`) ...
+
+1. Calculer la puissance statistique (\(1-\beta\)) pour détecter la différence entre les deux groupes de `Outcome`
+
+2. Calculer la taille minimale de l'échantillon afin d'avoir une puissance statistique d'au moins 0,80
+
+Essayez d'utiliser à la fois R et G*Power.
