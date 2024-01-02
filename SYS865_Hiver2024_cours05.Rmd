@@ -88,8 +88,6 @@ La taille de l'effet et les intervalles de confiance devraient accompagner les p
 
 ![Taille de l'effet](Slide-images\Effect_size.png){width=40%, height=40%}
 
-Effect_size.png
-
 # Tests d'hypothèse vs. Intervalle de confiance
 
 ## Base de données utilisée
@@ -161,7 +159,7 @@ ci_results
 2. Les largeurs de sépales d'Iris setosa et d'Iris versicolor sont-elles égales ?
 3. La longueur des sépales et la longueur des pétales d'Iris setosa sont-elles égales ?
 
-## Test d'hypthèse (suite)
+## Test d'hypothèse (suite)
 
 1. La largeur des pétales d'Iris virginica est-elle égale à 2,0 ?
 
@@ -170,7 +168,90 @@ virginica <- subset(iris, Species == "virginica")
 t.test(virginica$Petal.Width, mu = 2.0)
 ```
 
-## Test d'hypthèse (suite)
+## Test d'hypothèse (suite)
+
+La valeur t observée ne se situe pas dans la région de rejet.
+
+```{r, echo=FALSE}
+# Réalisation du test t
+resultat_test <- t.test(virginica$Petal.Width, mu = 2.0)
+
+# Extraction de la valeur t et des degrés de liberté
+valeur_t <- resultat_test$statistic
+df <- resultat_test$parameter
+
+# Valeurs t critiques pour un test à deux queues
+alpha <- 0.05
+t_critique_inf <- qt(alpha / 2, df)    # Valeur critique inférieure
+t_critique_sup <- qt(1 - alpha / 2, df) # Valeur critique supérieure
+
+# Séquence de valeurs t pour le tracé
+valeurs_t <- seq(-4, 4, length.out = 1000)
+
+# Densité de la distribution t
+densite_tdist <- dt(valeurs_t, df)
+
+# Création du graphique
+plot(valeurs_t, densite_tdist, type = "l", xlab = "Valeur t", ylab = "Densité", 
+     main = "Distribution t avec Région de Rejet")
+
+# Ombrage de la zone de rejection
+queue_inf <- valeurs_t < t_critique_inf
+queue_sup <- valeurs_t > t_critique_sup
+polygon(c(valeurs_t[queue_inf], rev(valeurs_t[queue_inf])), c(densite_tdist[queue_inf], rep(0, sum(queue_inf))), col = "lightblue")
+polygon(c(valeurs_t[queue_sup], rev(valeurs_t[queue_sup])), c(densite_tdist[queue_sup], rep(0, sum(queue_sup))), col = "lightblue")
+
+# Ajout d'une ligne pour la valeur t observée
+abline(v = valeur_t, col = "red", lwd = 2)
+
+# Annotations
+legend("topright", legend = c("Valeur t Observée", "Région de Rejet (Alpha = 0.05)"),
+       col = c("red", "lightblue"), lwd = 2, bty = "n")
+```
+
+## Test d'hypothèse (suite)
+
+La valeur p bilaterale supérieure à 0,05.
+
+```{r, echo=FALSE}
+# Réalisation du test t
+resultat_test <- t.test(virginica$Petal.Width, mu = 2.0)
+
+# Extraction de la valeur t et des degrés de liberté
+valeur_t <- resultat_test$statistic
+df <- resultat_test$parameter
+p_value <- resultat_test$p.value
+
+# Séquence de valeurs t pour le tracé
+valeurs_t <- seq(-4, 4, length.out = 1000)
+
+# Densité de la distribution t
+densite_tdist <- dt(valeurs_t, df)
+
+# Création du graphique
+plot(valeurs_t, densite_tdist, type = "l", xlab = "Valeur t", ylab = "Densité", 
+     main = "Distribution t avec Zone de la Valeur-p")
+
+# Ombrage de la zone de la valeur-p
+# Calcul des valeurs t critiques correspondant à la valeur-p
+t_critique_inf <- qt(p_value / 2, df, lower.tail = TRUE)
+t_critique_sup <- qt(p_value / 2, df, lower.tail = FALSE)
+
+# Ombrage des zones correspondant à la valeur-p
+queue_inf <- valeurs_t < t_critique_inf
+queue_sup <- valeurs_t > t_critique_sup
+polygon(c(valeurs_t[queue_inf], rev(valeurs_t[queue_inf])), c(densite_tdist[queue_inf], rep(0, sum(queue_inf))), col = "grey")
+polygon(c(valeurs_t[queue_sup], rev(valeurs_t[queue_sup])), c(densite_tdist[queue_sup], rep(0, sum(queue_sup))), col = "grey")
+
+# Ajout d'une ligne pour la valeur t observée
+abline(v = valeur_t, col = "red", lwd = 2)
+
+# Annotations
+legend("topright", legend = c("Valeur t Observée", "Zone de la Valeur-p"),
+       col = c("red", "grey"), lwd = 2, bty = "n")
+```
+
+## Test d'hypothèse (suite)
 
 2. Les largeurs de sépales d'Iris setosa et d'Iris versicolor sont-elles égales ? (Les variances sont homogènes.)
 
@@ -180,7 +261,7 @@ versicolor <- subset(iris, Species == "versicolor")
 var.test(setosa$Sepal.Width, versicolor$Sepal.Width)
 ```
 
-## Test d'hypthèse (suite)
+## Test d'hypothèse (suite)
 
 Les données sont normalement distribuées.
 
@@ -189,13 +270,56 @@ shapiro.test(setosa$Sepal.Width)
 shapiro.test(versicolor$Sepal.Width)
 ```
 
-## Test d'hypthèse (suite)
+## Test d'hypothèse (suite)
 
 ```{r}
 t.test(setosa$Sepal.Width, versicolor$Sepal.Width)
 ```
 
-## Test d'hypthèse (suite)
+## Test d'hypothèse (suite)
+
+La valeur t observée est dans la région de rejet, et la valeur p est très petite.
+
+```{r, echo=FALSE}
+# Réalisation du test t entre Setosa et Versicolor
+resultat_test <- t.test(setosa$Sepal.Width, versicolor$Sepal.Width)
+
+# Extraction de la statistique t observée et des degrés de liberté
+valeur_t_obs <- resultat_test$statistic
+df <- resultat_test$parameter
+
+# Valeurs t critiques pour un test à deux queues
+alpha <- 0.05
+t_critique_inf <- -qt(1 - alpha / 2, df)
+t_critique_sup <- qt(1 - alpha / 2, df)
+
+# Séquence de valeurs t pour le tracé, étendue de -4 à 10
+valeurs_t <- seq(-4, 10, length.out = 1000)
+
+# Densité de la distribution t
+densite_tdist <- dt(valeurs_t, df)
+
+# Création du graphique
+plot(valeurs_t, densite_tdist, type = "l", xlim = c(-4, 10), xlab = "Valeur t", ylab = "Densité", 
+     main = "Distribution t avec Région de Rejet")
+
+# Ombrage de la région de rejet
+zone_rejet_inf <- valeurs_t < t_critique_inf
+zone_rejet_sup <- valeurs_t > t_critique_sup
+polygon(c(valeurs_t[zone_rejet_inf], rev(valeurs_t[zone_rejet_inf])), c(densite_tdist[zone_rejet_inf], rep(0, sum(zone_rejet_inf))), col = "lightblue")
+polygon(c(valeurs_t[zone_rejet_sup], rev(valeurs_t[zone_rejet_sup])), c(densite_tdist[zone_rejet_sup], rep(0, sum(zone_rejet_sup))), col = "lightblue")
+
+# Ajout de lignes pour la valeur t observée et les valeurs t critiques
+abline(v = valeur_t_obs, col = "red", lwd = 2)
+abline(v = t_critique_inf, col = "darkgreen", lwd = 2, lty = 2)
+abline(v = t_critique_sup, col = "darkgreen", lwd = 2, lty = 2)
+
+# Annotations
+legend("topright", legend = c("Valeur t Observée", "Valeurs t Critiques", "Région de Rejet (Alpha = 0.05)"),
+       col = c("red", "darkgreen", "lightblue"), lwd = 2, bty = "n")
+```
+
+## Test d'hypothèse (suite)
 
 3. La longueur des sépales et la longueur des pétales d'Iris setosa sont-elles égales ?
 
