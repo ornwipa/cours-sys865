@@ -1,0 +1,262 @@
+---
+title: "SYS865 Inférence statistique avec programmation R"
+author: "Ornwipa Thamsuwan"
+date: "13 mars 2024"
+# date: "`r format(Sys.time(), '%d-%m-%Y')`"
+output:
+  beamer_presentation: 
+    slide_level: 2
+    theme: "Goettingen"
+    colortheme: "crane"
+    fonttheme: "structurebold"
+header-includes:
+- \setbeamertemplate{navigation symbols}{}
+- \setbeamertemplate{footline}[page number]
+---
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+# Plan de la séance
+
+- Corrélation
+- Régression linéaire
+
+# Corrélation
+
+La corrélation de variables aléatoires est une mesure qui quantifie le degré auquel deux variables aléatoires varient ensemble. 
+
+- Si les variations des deux variables montrent une tendance à se produire ensemble, on dit qu'elles sont positivement corrélées. 
+- Si une variable a tendance à augmenter quand l'autre diminue, elles sont négativement corrélées. 
+
+\pause
+
+La corrélation est souvent mesurée par un **coefficient** qui varie entre -1 et 1. 
+
+Un coefficient de 1 indique une corrélation positive parfaite, -1 indique une corrélation négative parfaite, et 0 indique l'absence de corrélation.
+
+## Corrélation de Pearson (Paramétrique)
+
+Définition: La corrélation de Pearson, également connue sous le nom de coefficient de corrélation produit-moment de Pearson, évalue la **relation linéaire** entre deux variables quantitatives.
+
+Caractéristiques: Valeurs entre -1 et 1.
+
+Utilisation: Préférable lorsque les deux variables sont **normalement distribuées** et la relation est supposée être linéaire.
+
+## Corrélation de Pearson (Paramétrique)
+
+Formule: Corrélation de Pearson = (Covariance de X et Y) / (Écart-type de X * Écart-type de Y).
+
+$$
+r_{xy} = \frac{\sum{(x_i - \bar{x})(y_i - \bar{y})}}{\sqrt{\sum{(x_i - \bar{x})^2} \sum{(y_i - \bar{y})^2}}}
+$$
+
+où \( r_{xy} \) est le coefficient de corrélation de Pearson entre les variables \( x \) et \( y \), \( x_i \) et \( y_i \) sont les valeurs des variables, et \( \bar{x} \) et \( \bar{y} \) sont les moyennes de \( x \) et \( y \), respectivement.
+
+## Corrélation de Spearman (Non-Paramétrique)
+
+Définition: La corrélation de Spearman, ou le coefficient de **rang** de Spearman, est utilisée pour mesurer la force et la direction de l'association entre deux variables classées.
+
+Caractéristiques: Également évaluée entre -1 et 1. Moins sensible aux valeurs aberrantes.
+
+Utilisation: Appropriée lorsque les données ne sont pas normalement distribuées ou lorsqu'on examine des relations non linéaires.
+
+## Corrélation de Spearman (Non-Paramétrique)
+
+Formule: Corrélation de Spearman = 1 - (6 * Somme des carrés des différences de rang) / (n(n^2 - 1)).
+
+$$
+\rho = 1 - \frac{6 \sum d_i^2}{n(n^2 - 1)}
+$$
+
+où \( \rho \) est le coefficient de corrélation de Spearman, \( d_i \) est la différence entre les rangs des i-èmes valeurs de \( x \) et \( y \), et \( n \) est le nombre de paires de données.
+
+## Rappel
+
+Il est crucial de se rappeler que \textcolor{red}{la corrélation ne signifie pas causalité.} 
+
+![Corrélation vs. causalité](Slide-images\breathe.jpg){width=45%, height=45%}
+
+## Analyse avec R : Données
+
+Base de données "Pima Indian Diabetes" 
+
+\pause
+**Test de normalité de Shapiro-Wilk**
+```{r, echo=FALSE}
+# Read the dataset
+diabetes <- read.csv("diabetes.csv")
+
+# Exclude columns 1 and 7
+diabetes_subset <- diabetes[, -c(1, 7, 9)]
+
+# Replace zeros with NA (missing values) in the dataset
+diabetes_subset[diabetes_subset == 0] <- NA
+
+# Perform Shapiro-Wilk test for each variable
+for (variable in names(diabetes_subset)) {
+  shapiro_test <- shapiro.test(diabetes_subset[[variable]])
+  p_value <- shapiro_test$p.value
+  cat(variable, ": p-value =", p_value, "\n")
+}
+```
+\pause
+Les données ne sont pas normalement distribuées. Il faut donc utiliser la corrélation de Spearman.
+
+## Analyse avec R : Histogrammes
+
+```{r, echo=FALSE, warning=FALSE}
+par(mfrow=c(2, 3))
+for (variable in names(diabetes_subset)) {
+  hist(diabetes_subset[[variable]], main=variable, xlab="", ylab="", na.rm=TRUE)
+}
+```
+
+## Analyse avec R : Graphiques Q-Q
+
+```{r, echo=FALSE, warning=FALSE}
+par(mfrow=c(2, 3))
+for (variable in names(diabetes_subset)) {
+  qqnorm(diabetes_subset[[variable]], main=variable, na.rm=TRUE)
+  qqline(diabetes_subset[[variable]], col="red", na.rm=TRUE)
+}
+```
+
+## Analyse avec R : Corrélation de Spearman
+
+```{r}
+spearman_correlation_matrix <- 
+  cor(diabetes_subset, 
+      use="complete.obs", 
+      method="spearman")
+```
+La fonction `cor(diabetes_subset)` calcule les coefficients de corrélation pour toutes les paires de variables dans la base de données `diabetes_subset`.
+
+L'argument `method="spearman"` spécifie que le coefficient de corrélation de rang de Spearman doit être utilisé.
+
+L'argument `use="complete.obs"` indique à R d'utiliser uniquement des cas complets (c'est-à-dire des lignes sans aucune valeur NA).
+
+## Analyse avec R : Corrélation de Spearman
+
+```{r, echo=FALSE}
+par(mar = c(5, 5, 4, 2) + 0.1)
+
+# Number of variables
+num_vars <- ncol(diabetes_subset)
+
+# Create the heatmap
+image(1:num_vars, 1:num_vars, t(spearman_correlation_matrix), col = heat.colors(256), xlab = "", ylab = "", axes = FALSE, main = "Spearman Correlation Matrix")
+
+# Add correlation values
+for (i in 1:num_vars) {
+  for (j in 1:num_vars) {
+    correlation_value <- round(spearman_correlation_matrix[j, i], 2) 
+    text(i, j, correlation_value, cex = 1.5) 
+  }
+}
+
+# Add variable names as labels
+axis(1, at = 1:num_vars, labels = names(diabetes_subset), las=2, cex.axis = 1.1)
+axis(2, at = 1:num_vars, labels = names(diabetes_subset), las=2, cex.axis = 1.1)
+
+par(mar = c(5, 4, 4, 2) + 0.1)
+```
+
+- Assez forte corrélation positive entre `SkinThickness` et `BMI`, et entre `Glucose` et `Insulin`. Toutefois, ...
+
+## Rappel
+
+Le fait que deux variables soient fortement corrélées ne démontre pas que l'une est la cause de l'autre.
+
+![Corrélation fallacieuse](Slide-images\spurious-correlation.png){width=50%, height=50%}
+
+## Analyse avec R : Visualisation de données
+
+Iris - nuage de points ("scatter plots" en anglais)
+
+```{r, echo=FALSE}
+par(mfrow = c(2, 2))
+
+plot(iris$Petal.Length, iris$Petal.Width, col = iris$Species, 
+     xlab = "Longueur des pétales", ylab = "Largeur des pétales", 
+     main = "Pétales: Largeur vs Longueur")
+legend("bottomright", legend = levels(iris$Species), col = 1:3, pch = 1)
+
+plot(iris$Sepal.Length, iris$Sepal.Width, col = iris$Species, 
+     xlab = "Longueur des sépales", ylab = "Largeur des sépales", 
+     main = "Sépales: Largeur vs Longueur")
+legend("bottomright", legend = levels(iris$Species), col = 1:3, pch = 1)
+
+plot(iris$Petal.Length, iris$Sepal.Length, col = iris$Species, 
+     xlab = "Longueur des pétales", ylab = "Longueur des sépales", 
+     main = "Longeurs: Pétale vs Sépale")
+legend("bottomright", legend = levels(iris$Species), col = 1:3, pch = 1)
+
+plot(iris$Petal.Width, iris$Sepal.Width, col = iris$Species, 
+     xlab = "Largeur des pétales", ylab = "Largeur des sépales", 
+     main = "Largeur: Pétale vs Sépale")
+legend("bottomright", legend = levels(iris$Species), col = 1:3, pch = 1)
+
+par(mfrow = c(1, 1))
+```
+
+## Analyse avec R : Distribution normale
+
+**Test de normalité de Shapiro-Wilk**
+```{r, echo=FALSE}
+variables <- c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width")
+
+for (variable in variables) {
+  test_result <- shapiro.test(iris[[variable]])
+  cat(variable, ": p-value =", round(test_result$p.value, 5), "\n")
+}
+```
+
+\pause
+En incluant uniquement l'espèce de `setosa`
+```{r, echo=FALSE}
+iris_setosa <- subset(iris, Species == "setosa")
+
+for (variable in variables) {
+  test_result <- shapiro.test(iris_setosa[[variable]])
+  cat(variable, ": p-value =", round(test_result$p.value, 5), "\n")
+}
+```
+
+## Analyse avec R : Rélation linéaire
+
+```{r, echo=FALSE}
+plot(iris_setosa$Sepal.Length, iris_setosa$Sepal.Width, 
+     main = "Nuage de points - Iris Setosa",
+     xlab = "Longueur du Sépale (cm)", ylab = "Largeur du Sépale (cm)",
+     col = "blue", pch = 19)
+```
+
+\pause
+Ainsi, nous démontrerons le calcul de corrélation de Pearson pour la longueur et la largeur des sépales de `setosa`.
+
+## Analyse avec R : Corrélation de Pearson
+
+La méthode par défaut pour `cor()` est le coefficient de corrélation de Pearson.
+
+La fonction `cor(x, y)` ou `cor(x, y, method = "pearson")` calcule le coefficient de corrélation de Pearson entre deux variables `x` et `y`.
+
+```{r}
+cor(iris_setosa$Sepal.Length, iris_setosa$Sepal.Width)
+```
+
+\pause
+- Le coefficient d'environ 0,74 suggère qu'à mesure que l'une des variables (longueur ou largeur) augmente, l'autre variable a tendance à augmenter également, et cette relation est relativement forte. Cependant, ...
+
+## Rappel
+
+L'existence d'une corrélation entre deux variables n'implique pas une relation de cause à effet.
+
+![Corrélation, et non causalité](Slide-images\cat-correlation.jpg){width=50%, height=50%}
+
+# Régression linéaire simple
+
+# Régression linéaire multiple
+
+# Confondeurs
