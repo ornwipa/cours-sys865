@@ -417,4 +417,152 @@ qqline(residuals, col = "red")
 
 # Régression linéaire multiple
 
-# Confondeurs
+![Brise-glace](Slide-images\elephant.jpg){width=70%, height=70%}
+
+## Régression linéaire multiple
+
+**Représentation du modèle**
+
+- Rélation linéaire entre \( Y \) et plusieurs \( X_1, X_2, ..., X_k \)
+- Formule : \( Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + ... + \beta_k X_k + \epsilon \)
+
+\pause
+
+**Estimation des coefficients**
+
+- Utilisation de la méthode des moindres carrés.
+- Minimisation de la somme des carrés des résidus.
+
+\pause
+
+**Interprétation des coefficients**
+
+- \( \beta_0 \) : Valeur de \( Y \) lorsque toutes les \( X \) sont nulles
+- \( \beta_1, \beta_2, ..., \beta_k \) : Effet de chaque \( X \) sur \( Y \)
+
+## Régression linéaire multiple : Conditions
+
+- Linéarité
+- Indépendance
+- Homoscédasticité
+- Normalité des résidus
+- **Absence de multicollinéarité** : Les variables indépendantes ne doivent pas être trop fortement corrélées entre elles.
+
+## Régression linéaire multiple : Inférence
+
+- Des **tests d'hypothèse** sont effectués pour déterminer si les coefficients sont significativement différents de zéro, ce qui indique que le prédicteur correspondant a un effet statistiquement significatif sur la variable dépendante.
+
+\pause
+
+- Des **intervalles de confiance** peuvent être construits pour les coefficients afin d'estimer leur précision.
+
+\pause
+
+### Évaluation et ajustement du modèle
+
+- **R²** mesure la proportion de la variance de la variable dépendante expliquée par les variables indépendantes.
+- **R² ajusté** est également utilisé, en particulier lors de la comparaison de modèles avec un nombre différent de prédicteurs.
+
+## Régression linéaire multiple : R²
+
+**Limitation du R²**
+
+Un problème avec le R² est qu'il peut augmenter simplement en ajoutant plus de variables indépendantes au modèle, qu'elles soient significatives ou non. Cela peut conduire à un modèle surajusté (**overfitting**).
+
+\pause
+
+*Pour surmonter cette limitation ...*
+
+Le R² ajusté modifie le R² pour prendre en compte le nombre de prédicteurs dans le modèle. 
+
+## Régression linéaire multiple : R² ajusté
+
+Le R² ajusté est calculé comme suit :
+
+\[ R^2_{\text{ajusté}} = 1 - (1 - R^2) \times \frac{n - 1}{n - p - 1} \]
+
+où :
+
+- \( n \) est le nombre d'observations.
+- \( p \) est le nombre de variables indépendantes.
+
+\pause
+\textcolor{red}{Le R² ajusté peut être inférieur au R², et contrairement au R², il ne va pas automatiquement augmenter avec l'ajout de nouvelles variables.}
+
+## Analyse avec R : Données et modèle
+
+Base de données "Pima Indian Diabetes" 
+
+Notez que les données ne sont pas normalement distribuées. Cependant, à des fins de démonstration uniquement, on va utiliser les variables `Glucose`, `SkinThickness`, `Insulin`, `BMI` et `Age` pour prédire `BloodPressure`.
+
+```{r, echo=FALSE}
+diabetes <- read.csv("diabetes.csv")
+diabetes_subset <- diabetes[, -c(1, 7, 9)]
+data_filtered <- diabetes_subset[!apply(diabetes_subset, 1, function(x) any(x == 0)), ]
+```
+```{r}
+model1 <- 
+  lm(BloodPressure ~ Glucose + SkinThickness + 
+       Insulin + BMI + Age, data = data_filtered)
+```
+
+\pause
+Observez l'estimation et la valeur p pour chacun des \(\beta\)'s.
+
+## Analyse avec R : Test d'hypothèse
+
+```{r, echo=FALSE}
+summary(model1)
+```
+
+## Analyse avec R : Interprétation, évaluation et ajustement
+
+Les contributions de `SkinThickness` et `Insulin` au modèle ne sont pas significatives.
+
+\pause
+
+Selon l'analyse de corrélation ...
+
+- `Glucose` et `Insulin` sont fortement corrélés
+- `SkinThickness` et `BMI` sont fortement corrélés.
+
+On peut choisir d'éliminer `SkinThickness` et `Insulin`.
+
+```{r}
+model2 <- 
+  lm(BloodPressure ~ Glucose + BMI + Age, 
+     data = data_filtered)
+```
+
+## Analyse avec R : Test d'hypothèse
+
+```{r, echo=FALSE}
+summary(model2)
+```
+
+## Analyse avec R : Intervalles de Confiance
+
+```{r, echo=FALSE}
+confint(model2)
+```
+
+On a observé que les intervalles de confiance des variables significatives (`BMI` et `Age`) ne couvrent pas 0, mais celui de la variable insignifiante (`Glucose`) le fait.
+
+## Analyse avec R : R² et R² ajusté
+
+```{r}
+summary(model1)$r.squared
+summary(model1)$adj.r.squared
+summary(model2)$r.squared
+summary(model2)$adj.r.squared
+```
+
+# Travaux pratiques
+
+Continuez à travailler avec la base de données "Pima Indian Diabetes".
+
+Définissez une variable dépendante et utilisez le reste comme variables indépendantes pour créer un modèle de régression linéaire.
+
+Évaluez et ajustez le modèle pour atteindre un bon R².
+
+Quelles variables apportent une contribution significative au modèle et dans quelle direction ?
