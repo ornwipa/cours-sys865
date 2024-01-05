@@ -23,6 +23,8 @@ options(tinytex.verbose = TRUE)
 - Corrélation
 - Régression linéaire
 
+![Brise-glace](Slide-images\constellation.jpg){width=50%, height=50%}
+
 # Corrélation
 
 La corrélation de variables aléatoires est une mesure qui quantifie le degré auquel deux variables aléatoires varient ensemble. 
@@ -256,6 +258,162 @@ L'existence d'une corrélation entre deux variables n'implique pas une relation 
 ![Corrélation, et non causalité](Slide-images\cat-correlation.jpg){width=50%, height=50%}
 
 # Régression linéaire simple
+
+Alors, peut-on connaître ou deviner la largeur des sépales si l'on a déjà mesuré la longueur des sépales ? 
+
+```{r, echo=FALSE}
+plot(iris_setosa$Sepal.Length, iris_setosa$Sepal.Width, 
+     main = "Nuage de points - Iris Setosa",
+     xlab = "Longueur du Sépale (cm)", ylab = "Largeur du Sépale (cm)",
+     col = "blue", pch = 19)
+
+# Fit a linear model
+model <- lm(Sepal.Width ~ Sepal.Length, data = iris_setosa)
+
+# Add a linear regression line
+abline(model, col = "red")
+```
+
+## Relation entre la corrélation de Pearson et la régression linéaire simple
+
+**But**
+
+- **Corrélation de Pearson** mesure la force et la direction de la relation linéaire entre deux variables.
+
+- **Régression linéaire** explique une variable (réponse) en fonction de la valeur d'une autre (prédicteur).
+
+\pause
+
+**Résultat**
+
+- **Coefficient de corrélation** (`r`) varie de -1 à 1.
+
+- **Régression linéaire** fournit une équation de la forme : \( y = \beta_0 + \beta_1 x + \epsilon \)
+
+## Régression linéaire simple : Modèle
+
+La régression linéaire simple d'une variable dépendante \( y \) sur une variable indépendante \( x \) est modélisée par: 
+$$
+y = \beta_0 + \beta_1 x + \epsilon
+$$
+
+  - Intercept (\( \beta_0 \)) est l'ordonnée à l'origine ou la valeur attendue de \( y \) quand \( x=0 \).
+  
+  - Pente (\( \beta_1 \)) est la pente de la ligne de régression indiquant le changement attendu dans \( y \) pour une augmentation d'une unité de \( x \).
+  
+  - Terme d'erreur (\( \epsilon \)) est la variation non expliquée.
+  
+## Régression linéaire simple : Estimation des coefficients
+
+L'objectif est d'estimer les coefficients \( \beta_0 \) et \( \beta_1 \) à partir des données. Cela se fait généralement en utilisant la méthode des **moindres carrés**, qui minimise la somme des différences au carré entre les valeurs observées et les valeurs prédites par le modèle.
+
+\pause
+- Calcul des résidus : \( \epsilon_i = y_i - (\beta_0 + \beta_1 x_i) \)
+  - \( \epsilon_i \) est le résidu pour l'observation \( i \)
+  - \( y_i \) est la valeur observée
+  - \( (\beta_0 + \beta_1 x_i) \) est la valeur prédite par le modèle
+
+\pause
+- Minimisation de la a somme des carrés des résidus : \( \sum \epsilon_i^2 = \sum (y_i - (\beta_0 + \beta_1 x_i))^2 \)
+
+- Trouve les coefficients \( \beta_0 \) et \( \beta_1 \) qui minimisent cette somme
+
+## Régression linéaire simple : Conditions
+
+- **Linéarité** : La relation entre `x` et `y` est linéaire.
+- **Indépendance** : Les observations sont indépendantes.
+- **Homoscédasticité** : La variance du terme d'erreur \(\epsilon\) est constante pour tous les niveaux de `x`.
+- **Normalité des erreurs** : Les termes d'erreur \(\epsilon\) sont normalement distribués (important pour faire des inférences sur les coefficients).
+
+## Régression linéaire simple : Inférence
+
+- **Tests d'Hypothèse** pour la pente (\( \beta_1 \)) en utilisant un test t, si elle est significativement différente de zéro.
+
+\pause
+
+- **Intervalles de Confiance** pour les coefficients \( \beta_0 \) et \( \beta_1 \).
+
+\pause
+
+- **Coefficient de Détermination (R²)** indique la qualité de l'ajustement du modèle aux données. 
+
+  - Est équivalent du carré du coefficient de corrélation de Pearson (r²) 
+  - Estime la proportion de la variance dans la variable dépendante `y` qui peut être prédite ou inférée à partir de la variable indépendante `x`.
+
+## Relation entre la corrélation de Pearson et la régression linéaire simple (retour)
+
+**Force de l'association** : La corrélation de Pearson fournit une mesure de la \textcolor{brown}{force de la relation} linéaire, ce qui est crucial pour \textcolor{brown}{décider si la régression linéaire est appropriée}.
+\pause
+
+**Direction et Pente** : Le signe du coefficient de corrélation de Pearson `r` indique la \textcolor{brown}{direction de la relation} (+ ou -), qui correspond à la \textcolor{brown}{pente dans la régression} linéaire.
+\pause
+
+**Variance expliquée** : Dans une régression linéaire simple avec un seul prédicteur, le carré du coefficient de corrélation de Pearson (r²) est égal à la statistique R² en régression, représentant la \textcolor{brown}{proportion de la variance dans la variable dépendante expliquée par la variable indépendante}.
+
+## Analyse avec R : Modèle
+
+Iris
+
+**La pente de la régression / la direction de la rélation** : Le coefficient de `x` est-il positif ou négatif ?
+
+```{r}
+model <- lm(Sepal.Width ~ Sepal.Length, 
+            data = iris_setosa)
+model
+```
+
+## Analyse avec R : Tests d'Hypothèse
+
+La valeur p du \(\beta_1\) (coefficient de `x`) est-elle inférieure à 0,05 ?
+
+```{r}
+summary(model)
+```
+
+## Analyse avec R : Intervalles de Confiance
+
+Les intervalles de confiance couvrent-ils les valeurs négatives, 0, ou positives... ou toutes ?
+
+```{r}
+confint(model, level = 0.95)
+```
+
+## Analyse avec R : R²
+
+**La force de l'association** : R² est-elle supérieure à 0,06 ?
+
+```{r}
+summary(model)$r.squared
+```
+
+\pause
+
+Et le carré du coefficient de corrélation de Pearson est ...
+
+```{r}
+cor(iris_setosa$Sepal.Length, iris_setosa$Sepal.Width)^2
+```
+
+## Analyse avec R : Homoscédasticité
+
+La variance de \(\epsilon\) ou `model$residuals` est-elle constante pour tous les niveaux de `x` ?
+
+```{r, echo=FALSE}
+plot(iris_setosa$Sepal.Length, model$residuals,
+     xlab = "Sepal Length", ylab = "Residuals",
+     main = "Residuals vs Sepal Length")
+abline(h = 0, col = "red")
+```
+
+## Analyse avec R : Normalité des Erreurs
+
+La valeur p du test Shapiro-Wilk des résidus du modèle (\(\epsilon\) ou `model$residuals`) est `r  shapiro.test(model$residuals)$p.value`.
+
+```{r, echo=FALSE}
+residuals <- resid(model)
+qqnorm(residuals)
+qqline(residuals, col = "red")
+```
 
 # Régression linéaire multiple
 
