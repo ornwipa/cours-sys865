@@ -1,0 +1,236 @@
+---
+title: "SYS865 Inférence statistique avec programmation R"
+author: "Ornwipa Thamsuwan"
+date: "20 mars 2024"
+# date: "`r format(Sys.time(), '%d-%m-%Y')`"
+output:
+  beamer_presentation: 
+    slide_level: 2
+    theme: "Goettingen"
+    colortheme: "crane"
+    fonttheme: "structurebold"
+header-includes:
+- \setbeamertemplate{navigation symbols}{}
+- \setbeamertemplate{footline}[page number]
+---
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+# Plan de la séance
+
+- Régression logistique
+- Confondeur
+
+# Récap et matière à réfléxion
+
+Base de données "Pima Indian Diabetes"
+
+- Variable dépendante : `Outcome`
+- Variables indépendantes : `Pregnancies`, `Glucose`, `BloodPressure`, `SkinThickness`, `Insulin`, `BMI`, `DiabetesPedigreeFunction` et `Age`
+
+\pause
+**R code**
+```{r}
+data <- read.csv("diabetes.csv")
+selected_columns <- data[, 2:6]
+rows_with_zero <- apply(selected_columns, 1, 
+                        function(x) any(x == 0))
+data_cleaned <- data[!rows_with_zero, ]
+names(data_cleaned)[
+  names(data_cleaned) == 
+    "DiabetesPedigreeFunction"] <- "DbtPdgFunc"
+```
+
+## Recap : Modèle complète
+
+```{r}
+model_full <- lm(Outcome ~ Pregnancies + Glucose + 
+                   BloodPressure + SkinThickness + 
+                   Insulin + BMI + DbtPdgFunc + Age,
+                 data = data_cleaned)
+round(summary(model_full)$coefficients, 4)
+```
+
+## Recap : Modèle ajusté
+
+En supprimant les variables non importantes `BloodPressure`, `SkinThickness` et `Insulin` ...
+
+```{r}
+model_reduced <- lm(Outcome ~ Pregnancies + Glucose + 
+                      BMI + DbtPdgFunc + Age,
+                    data = data_cleaned)
+round(summary(model_reduced)$coefficients, 4)
+```
+
+## Recap : Comparaison des modèles par R² et R² ajusté
+
+```{r}
+summary(model_full)$r.squared
+summary(model_reduced)$r.squared
+```
+\pause
+```{r}
+summary(model_full)$adj.r.squared
+summary(model_reduced)$adj.r.squared
+```
+
+## Recap : Intervalles de confiance de \(\beta\)'s
+
+```{r}
+round(confint(model_reduced, level = 0.95), 4)
+```
+
+## Recap : Visualisation des résultats
+
+```{r, echo=FALSE, warning=FALSE}
+# Adjust plot margins to create space for the legend at the bottom
+# Increase the bottom margin (first number)
+par(mar=c(10, 4.1, 4.1, 2.1) + 0.1)  # Default is c(5.1, 4.1, 4.1, 2.1)
+
+# Scatter plot
+plot(data_cleaned$Glucose, data_cleaned$Outcome, 
+     main="Scatter Plot of Glucose vs Outcome",
+     xlab="Glucose", ylab="Outcome", pch=19, col=rgb(0,0,1,0.5))
+abline(model_reduced, col="red")
+
+linear_model <- lm(Outcome ~ Glucose, data=data_cleaned)
+abline(linear_model, col="brown")
+
+# Add a legend
+legend(x="bottom", # Position of the legend
+       legend=c("Linear model for Outcome ~ Pregnancies + Glucose + BMI + DbtPdgFunc + Age", 
+                "Linear model for Outcome ~ Glucose"), # Labels
+       col=c("red", "brown"), 
+       lty=1, # Line types
+       cex=1.2, # Increase text size
+       xpd=TRUE, # Allow plotting outside the plot area
+       inset=c(0, -0.4)) # Adjust horizontal and vertical position
+```
+
+La réponse (`y` ou `Outcome`) n'est pas une variable continues, mais binaire, soit 0 ou 1 et non une valeur intermédiare.
+
+## Attention!
+
+![Extrapolation - "Sustainable is unsustainable."](Slide-images\1.-sustainable.png){width=80%, height=80%}
+
+## Recap : Visualisation des résultats
+
+```{r, echo=FALSE, warning=FALSE}
+par(mar=c(10, 4.1, 4.1, 2.1) + 0.1)  # Default is c(5.1, 4.1, 4.1, 2.1)
+
+# Scatter plot
+plot(data_cleaned$Glucose, data_cleaned$Outcome, 
+     main="Scatter Plot of Glucose vs Outcome",
+     xlab="Glucose", ylab="Outcome", pch=19, col=rgb(0,0,1,0.5))
+
+linear_model <- lm(Outcome ~ Glucose, data=data_cleaned)
+abline(linear_model, col="brown")
+
+logistic_model <- glm(Outcome ~ Glucose, data=data_cleaned, family=binomial)
+logistic_curve <- function(x) {
+  predict(logistic_model, newdata=data.frame(Glucose=x), type="response")
+}
+curve(logistic_curve(x), add=TRUE, col="darkgreen")
+
+# Add a legend
+legend(x="bottom", # Position of the legend
+       legend=c("Linear model for Outcome ~ Glucose",
+                "Logistic model for Outcome ~ Glucose"), # Labels
+       col=c("brown", "darkgreen"), 
+       lty=1, # Line types
+       cex=1.2, # Increase text size
+       xpd=TRUE, # Allow plotting outside the plot area
+       inset=c(0, -0.4)) # Adjust horizontal and vertical position
+```
+
+Une alternative est la régression logistique, fournissant un résultat sous forme de probabilité que `y` soit 0 ou 1.
+
+## Introduction au nouveau sujet
+
+![Régression linéaire vs. logistique](Slide-images\linear-regression-vs-logistic-regression.png){width=50%, height=50%}
+
+# Régression logistique
+
+La régression logistique modélise la probabilité d'un résultat binaire basée sur une ou plusieurs variables prédictives. Cela est particulièrement utile lorsque la variable dépendante ne peut prendre que deux résultats possibles (succès ou échec).
+
+\pause
+Le modèle de régression logistique est basé sur **la fonction logit, le logarithme naturel du rapport de cotes**.
+
+  \[ \ln\left(\frac{p}{1 - p}\right) = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_kX_k \]
+
+- \( p \) est la probabilité d'une des issues,
+- \( X_1, X_2, ..., X_k \) sont les variables prédictives.
+- \( \beta_1, \beta_2, ..., \beta_k \) représentent le changement dans le log des cotes de l'issue pour un changement unitaire dans les variables prédictives.
+
+## Régression logistique
+
+**Inférence sur les Coefficients** : Les tests d'hypothèse sur \( \beta_1, \beta_2, ..., \beta_k \) sont réalisées pour déterminer si les prédicteurs sont significativement associés à l'issue.
+
+\pause
+**Méthode d'Estimation**
+
+- Les coefficients sont estimés en utilisant l'Estimation du Maximum de Vraisemblance (MLE).
+- Cette méthode trouve les coefficients qui maximisent la vraisemblance d'observer les données de l'échantillon.
+
+\pause
+**Interprétation en Rapport de Cotes** : Un rapport de cotes supérieur à 1 indique une augmentation des cotes de l'issue avec une augmentation unitaire du prédicteur, et vice versa.
+
+# Critères d'information
+
+## Critère d'Information d'Akaike (AIC)
+
+- L'AIC est une mesure de la qualité relative d'un modèle statistique pour un ensemble de données.
+- Basé sur le concept d'**entropie d'information**, l'AIC offre un équilibre entre la complexité du modèle (nombre de paramètres) et l'adéquation du modèle.
+- Formule de l'AIC : \( AIC = 2k - 2\ln(L) \)
+  - \( k \) est le nombre de paramètres dans le modèle et 
+  - \( L \) est la vraisemblance du modèle.
+- \textcolor{red}{Une valeur AIC plus basse indique un meilleur modèle.}
+- L'AIC pénalise les modèles pour leur complexité, aidant ainsi à éviter le surajustement.
+- Lors de la comparaison de modèles, la valeur absolue de l'AIC n'est pas aussi importante que la différence entre les valeurs AIC de différents modèles.
+- Des modèles avec un AIC différant de plus de 2 sont généralement considérés comme ayant des preuves substantielles contre le modèle avec l'AIC le plus élevé.
+
+## Critère d'Information Bayésien (BIC)
+
+- Le BIC est similaire à l'AIC mais introduit une pénalité plus forte pour le nombre de paramètres dans le modèle.
+- Le BIC est dérivé de la probabilité bayésienne et utilisé pour la sélection de modèles.
+- Formule du BIC : \( BIC = \ln(n)k - 2\ln(L) \)
+  - \( n \) est le nombre d'observations,
+  - \( k \) est le nombre de paramètres, et
+  - \( L \) est la vraisemblance du modèle.
+- Comme l'AIC, \textcolor{red}{une valeur BIC plus basse indique un meilleur modèle.}
+- Le BIC a tendance à pénaliser plus lourdement la complexité que l'AIC, surtout à mesure que la taille de l'échantillon augmente.
+- La règle de décision pour comparer les modèles avec le BIC est similaire à l'AIC.
+- Une différence de 6 ou plus est considérée comme une preuve forte contre le modèle avec le BIC le plus élevé.
+
+## AIC vs BIC
+
+- L'AIC est plus axé sur la recherche du modèle qui explique le mieux les données, tandis que le BIC tente de trouver le véritable modèle parmi l'ensemble des candidats.
+- En pratique, l'AIC peut être meilleur pour les modèles prédictifs, tandis que le BIC est plus utile pour la modélisation explicative, en particulier dans de grands ensembles de données.
+- Il est essentiel de se rappeler que l'AIC et le BIC sont des mesures comparatives, utiles pour comparer différents modèles sur le même ensemble de données, mais pas pour évaluer la qualité absolue d'un modèle unique isolément.
+
+# Récap et matière à réfléxion
+
+Base de données "Pima Indian Diabetes"
+
+- Variable dépendante : `Outcome`
+- Variables indépendantes : `Pregnancies`, `Glucose`, `BloodPressure`, `SkinThickness`, `Insulin`, `BMI`, `DiabetesPedigreeFunction` et `Age`
+
+\pause
+\textcolor{red}{Corrélations modérées entre variables indépendantes}
+```{r}
+cor(data_cleaned$Pregnancies, data_cleaned$Age)
+cor(data_cleaned$Glucose, data_cleaned$Insulin)
+cor(data_cleaned$SkinThickness, data_cleaned$BMI)
+```
+
+## Recap : 
+
+
+
+# Confondeur
+
+
+
+# Travaux pratiques
