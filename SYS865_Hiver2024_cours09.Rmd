@@ -2,13 +2,13 @@
 title: "SYS865 Inférence statistique avec programmation R"
 author: "Ornwipa Thamsuwan"
 date: "20 mars 2024"
-# date: "`r format(Sys.time(), '%d-%m-%Y')`"
 output:
-  beamer_presentation: 
+  beamer_presentation:
     slide_level: 2
-    theme: "Goettingen"
-    colortheme: "crane"
-    fonttheme: "structurebold"
+    theme: Goettingen
+    colortheme: crane
+    fonttheme: structurebold
+  ioslides_presentation: default
 header-includes:
 - \setbeamertemplate{navigation symbols}{}
 - \setbeamertemplate{footline}[page number]
@@ -188,13 +188,15 @@ Le modèle de régression logistique est basé sur **la fonction logit, le logar
 **Guides généraux**
 
 - Commencez avec un **cadre théorique** ou des recherches antérieures pour identifier les prédicteurs potentiels.
+\pause
 
 - Prenez en compte la **signification statistique** des variables dans les analyses préliminaires.
+\pause
 
 - Vérifiez la **multicollinéarité** parmi les prédicteurs, car une forte collinéarité peut déformer l'estimation et l'interprétation des coefficients.
+\pause
 
 - Évitez d'inclure trop de variables, surtout dans de petits ensembles de données, pour prévenir le **surajustement**.
-
 \pause
 
 ### Méthodes de sélection séquentielles
@@ -359,9 +361,7 @@ model6 <- glm(Outcome ~ Pregnancies + Glucose +
 AIC(model6)
 ```
 
-- Ne pas retirer `SkinThickness`, mais essayer de retirer `Insulin`
-
-## Exemple : Sélection régressive
+\pause
 
 ```{r}
 model7 <- glm(Outcome ~ Pregnancies + Glucose +
@@ -371,11 +371,20 @@ model7 <- glm(Outcome ~ Pregnancies + Glucose +
 AIC(model7)
 ```
 
-- Ne pas retirer `Insulin`
+- Ne retirer ni `SkinThickness` ni `Insulin`
 
-\pause
+## Exemple : Sélection régressive
 
-**Modèle à jours** est toujours un modèle complet avec toutes les variables possibles.
+Mais, si on essayait de retirer ces trois variables (`BloodPressure`, `SkinThickness` et `Insulin`) en même temps ...
+
+```{r}
+model8 <- glm(Outcome ~ Pregnancies + Glucose +
+                BMI + DbtPdgFunc + Age,  
+              data=data_cleaned, family=binomial)
+AIC(model8)
+```
+
+- Selon l'AIC, le modèle s'améliore.
 
 *Le reste du processus sera consacré aux travaux pratiques.*
 
@@ -386,7 +395,6 @@ Les **intervalles de confiance** des variables statistiquement significatives ne
 ```{r, echo=FALSE}
 round(confint(modelf, level = 0.95), 4)
 ```
-
 
 # Récap et matière à réfléxion
 
@@ -400,7 +408,7 @@ cor(data_cleaned$Glucose, data_cleaned$Insulin)
 cor(data_cleaned$SkinThickness, data_cleaned$BMI)
 ```
 
-## Critère d'Information
+## Comparaison des modèles
 
 ```{r}
 model2 <- glm(Outcome ~ Glucose + Age, 
@@ -411,25 +419,112 @@ model3 <- glm(Outcome ~ Glucose + Age + Insulin,
 AIC(model3)
 ```
 
-Pourquoi l'ajout de la variable `Insulin` augmente-t-il l'AIC ?
+\textcolor{red}{Pourquoi l'ajout de la variable `Insulin` augmente-t-il l'AIC ?}
 
 \pause
-- Il y a déjà la variable `Glucose`.
+- \textcolor{red}{Il y a déjà la variable `Glucose`.}
 
 ## Sélection des prédicteurs
 
-Connaissance du domaine
+Il faut tenir compte de la **connaissance du domaine**.
 
+L'insuline est l'hormone responsable de la régulation du taux de glycémie (glucose dans le sang).
+
+`Glucose` : la concentration de glucose plasmatique mesurée 2 heures après un test de tolérance au glucose oral.
+
+`Insulin` : l'insuline sérique 2 heures après le début du test, en micro-unités par millilitre (mu U/ml).
+
+\pause
+
+### `Glucose` et `Insulin` dans le processus métabolique
+
+- Chez un individu en bonne santé, une augmentation du niveau de glucose déclenche la libération d'insuline. 
+
+- Mais, en cas de résistance à l'insuline (un précurseur du diabète), cette relation est perturbée.
+
+## Sélection des prédicteurs
+
+### Glycémie (`Glucose`) et Diabète (`Outcome`)
+
+Il existe généralement une forte corrélation positive. 
+
+- Des niveaux élevés de glucose sont souvent indicatifs du diabète, car l'incapacité du corps à utiliser efficacement l'insuline entraîne une élévation du taux de glycémie.
+
+### Insuline (`Insulin`) et Diabète (`Outcome`)
+
+Cette relation peut être plus complexe. 
+
+- Aux premiers stades du diabète de type 2, les niveaux d'insuline peuvent être élevés car le corps essaie de compenser l'augmentation de glycémie. 
+
+- Avec le temps (dans les stades avancés du diabète), le pancréas peut produire moins d'insuline, conduisant à des niveaux d'insuline plus faibles.
+
+## Introduction au nouveau sujet
+
+**Diabète** : Le corps ne peut pas traiter correctement les niveaux de glucose dans le sang. Cela \textcolor{red}{est dû} soit à une \textcolor{red}{production insuffisante d'insuline par le pancréas} (diabète de type 1) soit à une \textcolor{red}{utilisation inefficace de l'insuline produite} (diabète de type 2 et cas de "Pima Indian Diabetes").
+
+![Confusion dans la relation](Slide-images\confounder.PNG){width=45%, height=45%}
 
 # Confondeur
 
+Un confondeur (ou facteur de confusion) est une variable qui influence à la fois la réponse et le prédicteur. 
 
+Ce facteur peut conduire à une interprétation trompeuse de la relation entre les variables étudiées car il affecte le résultat, mais il ne s'agit pas de la principale variable d'intérêt.
+
+\pause
+
+![La vente de la glace a-t-elle un impact sur une attaque de requin ?](Slide-images\icecreamshark.png){width=35%, height=35%}
+
+## Confondeur
+
+Sans tenir compte de l'augmentation de la température (confondeur), il peut y avoir une association fallacieuse.
+
+![Confondeur dans la relation](Slide-images\Confounding-Variable.jpg){width=55%, height=55%}
+
+## D'autre exemples dans la base de données
+
+**Indice de Masse Corporelle (IMC)** peut être influencé par des facteurs de mode de vie. 
+
+- Un IMC élevé pourrait suggérer un mode de vie incluant moins d'activité physique ou un régime alimentaire pouvant contribuer à la prise de poids, deux facteurs de risque du diabète.
+\pause
+
+**Âge** est un facteur connu du risque de diabète. 
+
+- Un âge plus avancé est associé à un risque accru de diabète de type 2, à cause des changements dans le métabolisme et éventuellement de mode de vie au fil du temps.
+\pause
+
+**Fonction du Pedigree du Diabète** (ou prédisposition génétique au diabète) prend en compte l'histoire du diabète chez les proches et la relation génétique de ces proches avec le sujet. 
+
+## Résumé
+
+Il est crucial de toujours inclure les confondeurs connus dans le modèle (`BMI`, `Age` et `DiabetesPedigreeFunction`).
+
+Mais, il faut être prudent ...
+
+![Rappel concernant les confondeurs](Slide-images\confounding_variables.png){width=55%, height=55%}
+
+## Erreurs d'identification des confondeurs
+
+Ajuster trop de variables qui ne sont pas des confondeurs peut entraîner un **surajustement**, obscurcissant les vraies associations ou créant de fausses associations.
+
+\pause
+
+Attention à la **collinéarité**, où deux variables prédictives ou plus sont fortement corrélées. Ajuster l'une peut inadvertamment ajuster les autres, conduisant à des résultats trompeurs.
+
+\pause
+
+Il est important de **différencier un confondeur d'un modificateur d'effet** (interaction). 
+
+- Un modificateur d'effet change la direction ou la force de l'association entre l'exposition et le résultat selon ses niveaux.
+
+- Un confondeur est une influence externe à contrôler.
 
 # Travaux pratiques
 
 Continuez à travailler avec la base de données "Pima Indian Diabetes".
 
 Avec `Outcome` comme variable dépendante, utilisez le reste des paramètres comme variables indépendantes pour créer un modèle de régression logistique.
+
+Parmi les variables indépendantes, identifiez des confondeurs possibles et ajustez-les.
 
 Employez les méthodes de sélection progressive et régressive.
 
