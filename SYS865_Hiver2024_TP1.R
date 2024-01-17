@@ -4,7 +4,7 @@ moyenne1 <- mean(data$Pregnancies)
 variance1 <- var(data$Pregnancies)
 
 hist(data$Pregnancies)
-for (col in 2:ncol(data)) {
+for (col in 1:ncol(data)) {
   fig_name=paste("histogramme/Histogramme", 
                  colnames(data)[col], ".jpg", 
                  sep = "")
