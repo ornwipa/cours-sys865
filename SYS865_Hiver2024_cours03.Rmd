@@ -221,11 +221,11 @@ Une équipe de recherche sur la prévalence de l’hypertension divise la popula
 ## Attention!
 ![Biais de survie](Slide-images\survivalbias.jpg){width=80%, height=60%}
 
-# Taille de l'échantillon
+# Effet de la taille de l'échantillon sur l'erreur et l'inférence
 
 ## Théorème Central Limite et Implications
 
-Le Théorème Central Limite (TCL) stipule que, pour une taille d'échantillon suffisamment grande, la distribution des moyennes d'échantillons se rapprochera d'une distribution normale, indépendamment de la distribution originale de la population.
+Le Théorème Central Limite (TCL) stipule que, pour une taille d'échantillon suffisamment grande, la distribution des moyennes d'échantillons se rapprochera d'une distribution normale, \textcolor{red}{indépendamment} de la distribution originale de la population.
 
 \pause
 ### Définition
@@ -290,17 +290,16 @@ legend("topright", legend = etiquettes_legendes, col = couleurs_tracé, lwd = 2)
 
 ## Distribution Normale
 
-Le TCL justifie l'utilisation de la distribution normale dans l'inférence statistique et les tests d'hypothèses, même lorsque la population sous-jacente n'est pas normalement distribuée.
+À mesure que la taille de l'échantillon (\( n \)) augmente, la forme de la distribution de la moyenne de l'échantillon (\( \overline{X} \)) devient de plus en plus en cloche ("bell-shapred" en anglais) ou normale.
 
-\pause
-À mesure que \( n \) (la taille de l'échantillon) augmente, la forme de la distribution de la moyenne de l'échantillon \( \overline{X} \) devient de plus en plus en cloche ("bell-shapred" en anglais) ou normale.
+Le TCL justifie l'utilisation de la distribution normale dans l'inférence statistique et les tests d'hypothèses, même lorsque la population sous-jacente n'est pas normalement distribuée.
 
 ## Réduction des Erreurs d'Échantillonnage
 
 L'**erreur standard**, qui mesure la variabilité des moyennes d'échantillons \( \overline{X} \), est donnée par \( SE = \frac{\sigma}{\sqrt{n}} \).
 
 \pause
-À mesure que la taille de l'échantillon \( n \) augmente, l'erreur standard \( SE \) diminue. Cela indique que des échantillons plus grands fournissent des estimations plus précises de la moyenne de la population, réduisant ainsi le risque d'erreur d'échantillonnage.
+À mesure que la taille de l'échantillon (\( n \)) augmente, l'erreur standard \( SE \) diminue. Cela indique que des échantillons plus grands fournissent des estimations plus précises de la moyenne de la population, réduisant ainsi le risque d'erreur d'échantillonnage.
 
 ## À noter que ...
 
@@ -308,7 +307,9 @@ La taille d'échantillon "suffisamment grande" pour le TCL est généralement co
 
 # Intervalle de confiance
 
-![Intervalle de confiance ?](Slide-images\garfield-confidence-interval.png){width=50%, height=50%}
+![Intervalle de Confiance](Slide-images\garfield-confidence-interval.png){width=50%, height=50%}
+
+Est-ce que ça donne une information importante ?
 
 ## Définition de l'Intervalle de Confiance
 
@@ -394,10 +395,7 @@ ci_upper <- mean_glucose + margin_error
 ```
 
 \pause
-L'intervalle de confiance à 95 % pour le taux de glucose plasmatique moyen se situe entre ... mg/dL
-```{r, echo=FALSE}
-cat(ci_lower, "et", ci_upper)
-```
+L'intervalle de confiance à 95 % pour le taux de glucose plasmatique moyen se situe entre `r round(ci_lower,1)` et `r round(ci_upper,1)` mg/dL.
 
 ## Exemples avec R (suite)
 
@@ -423,7 +421,7 @@ calculate_ci <- function(data, conf_level = 0.95) {
 }
 ```
 
-- Coupter des données
+- Séparer des données
 ```{r}
 data_outcome_0 <- subset(data, Outcome == 0)
 data_outcome_1 <- subset(data, Outcome == 1)
@@ -447,7 +445,9 @@ Pour chacun des neuf paramètres dans la base de données sur les diabètes ...
 
 1. Calculer l'intervalle de confiance
 
-2. En séparant selon le paramètre "Outcome" (0 ou 1), recalculer l'IC
+En séparant les premiers huits paramètres selon le paramètre “Outcome” (0 ou 1) ...
+
+2. Calculer l'IC pour chaque groupe
 
 3. Déterminer si les IC des deux groupes sont différents 
 
