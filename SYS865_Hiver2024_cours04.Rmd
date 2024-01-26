@@ -696,10 +696,10 @@ Enter the event code FFBQSE
 
 # Travaux pratiques
 
-Pour chacun des neuf paramètres dans la base de données sur les diabètes ...
+Pour chacun des huit variables (`Pregnancies`, `Glucose`, `BloodPressure`, `SkinThickness`, `Insulin`, `BMI`, `DiabetesPedigreeFunction` et `Age`) dans la base de données sur les diabètes ...
 
-1. Vérifier les conditions pour utiliser un test \(t\)
+1. Vérifier les conditions pour utiliser un test paramétrique
 
-2. Effectuer le test \(t\) ou Wilcoxon pour comparer les valeurs entre les deux groupes (non diabétique et diabétique)
+2. Effectuer le test \(t\) ou Wilcoxon pour comparer les moyennes entre les deux groupes : non diabétique (`Outcome`=0) et diabétique (`Outcome`=1)
 
 3. Interpréter les résultats
