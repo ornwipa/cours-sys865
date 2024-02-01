@@ -265,7 +265,7 @@ legend("topright", legend = c("Outcome 0", "Outcome 1"), col = c("blue", "red"),
 
 ## Erreur type I
 
-Une concentration de glucose plasmatique (à 2h) normale est inférieure à 140 mg/dL.
+Une concentration de glucose plasmatique (à 2h) est supérieure à 140 mg/dL quand la personne n'est pas diabétique.
 
 ```{r, echo=FALSE}
 # Plot the normal probability distributions
@@ -290,7 +290,7 @@ legend("topright", legend = c("Outcome 0", "Outcome 1", "Erreur type I (Valeur s
 
 ## Erreur type II
 
-Une concentration de glucose plasmatique (à 2h) normale est inférieure à 140 mg/dL.
+Une concentration de glucose plasmatique (à 2h) est inférieure à 140 mg/dL quand la personne est diabétique.
 
 ```{r, echo=FALSE}
 # Plot the normal probability distributions
@@ -379,13 +379,11 @@ Les tests d'hypothèses sont utilisés pour déterminer s'il existe suffisamment
 
 Exemples dans le génie mécanique :
 
-- Résistance des matériaux : Tester si un matériau composite possède une résistance à la traction supérieure à celle d'un matériau standard.
+- Tester si un matériau composite possède une résistance à la traction supérieure à celle d'un matériau standard.
 
-- Efficacité thermique : Comparer l'efficacité thermique de deux liquides de refroidissement moteur différents.
+- Comparer l'efficacité thermique de deux liquides de refroidissement moteur différents.
 
-- Aérodynamique : Évaluer l'impact d'un nouveau design d'aile sur le rapport portance/traînée d'un aéronef. 
-
-- Analyse des Vibrations : Analyser si une nouvelle technique d'amortissement des vibrations réduit plus efficacement les vibrations qu'une méthode actuelle. 
+- Analyser si une nouvelle technique d'amortissement des vibrations réduit plus efficacement les vibrations qu'une méthode actuelle. 
 
 ## Hypothèse nulle (\( H_0 \)) et alternative (\( H_1 \))
 
@@ -666,7 +664,7 @@ shapiro.test(bmi_diabetic)
 
 ## Test de Wilcoxon
 
-Le test de Wilcoxon, également connu sous le nom de test de rang signé de Wilcoxon, est un test \textcolor{brown}{non paramétrique} utilisé en statistique pour comparer deux échantillons appariés ou pour tester des différences dans un seul échantillon apparié ou répété. Il est utilisé lorsque les conditions pour un test \(t\) paramétrique ne sont pas remplies, notamment \textcolor{brown}{lorsque les données ne suivent pas une distribution normale}.
+Le test de Wilcoxon est un test \textcolor{brown}{non paramétrique} utilisé pour comparer les moyennes des deux échantillons. Il est utilisé lorsque les conditions pour un test paramétrique (test \(t\)) ne sont pas remplies.
 \pause
 
 - **Test de Rang Somme de Wilcoxon** : Utilisé pour comparer deux échantillons indépendants. Ce test est également connu sous le nom de test de Mann-Whitney.
