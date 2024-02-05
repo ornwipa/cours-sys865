@@ -58,9 +58,7 @@ Le p-value est la probabilité d'obtenir un effet au moins aussi extrême que ce
 
 ![Valeur p](Slide-images\p-value.png){width=50%, height=50%}
 
-## Valeur p
-
-**Seuil et interprétation** :
+## Valeur p : Seuil et interprétation
 
 Le p-value est comparé à un niveau de signification prédéfini (\(\alpha\), souvent 0,05). 
 
@@ -70,23 +68,21 @@ Le p-value est comparé à un niveau de signification prédéfini (\(\alpha\), s
 
 - Cependant, cela ne signifie pas que \(H_0\) est fausse. Il suggère simplement que les données observées sont peu probables sous \(H_0\).
 
-## Valeur p
-
-**Idées fausses et mauvais usages** :
-
-- Une idée fausse commune est d'équivaloir un petit p-value à une grande taille d'effet ou à une signification pratique.
-
 \pause
 
-- Le p-value ne fournit pas la probabilité des données compte tenu des deux hypothèses (nulle et alternative) ; il ne l'évalue que sous \(H_0\).
+- Le p-value ne fournit pas la probabilité des données compte tenu des deux hypothèses (nulle et alternative); il ne l'évalue que sous \(H_0\).
 
-## Valeur p
+## Valeur p : Malentendu ou mauvais usages
 
-**Métriques complémentaires** :
-
-La taille de l'effet et les intervalles de confiance devraient accompagner les p-values pour fournir une compréhension plus complète des résultats.
+Une idée fausse commune est d'équivaloir un petit p-value à une grande taille d'effet ou à une signification pratique.
 
 ![Taille de l'effet](Slide-images\Effect_size.png){width=40%, height=40%}
+
+## Valeur p : Métriques complémentaires
+
+Pour fournir une compréhension plus complète des résultats, les intervalles de confiance devraient accompagner les p-values.
+
+![Exemple d'un rapport des intervalles de confiance](Slide-images\cisim.png){width=60%, height=60%}
 
 # Tests d'hypothèse vs. Intervalle de confiance
 
@@ -126,8 +122,8 @@ calculate_ci <- function(data, level = 0.95) {
   mean <- mean(data)
   stderr <- sd(data)/sqrt(n)
   error_margin <- qt(level/2 + 0.5, df = n-1)*stderr
-  lower_ci <- mean - error_margin
-  upper_ci <- mean + error_margin
+  lower_ci <- round(mean - error_margin, 3)
+  upper_ci <- round(mean + error_margin, 3)
   return(c(lower_ci, upper_ci))
 }
 ```
@@ -140,8 +136,12 @@ La fonction `apply` est utilisé pour calculer ces statistiques pour chaque colo
 
 **R code** :
 ```{r}
-ci_results <- by(iris[, 1:4], 
-                 iris$Species, 
+iris_short <- iris # simplifier les noms
+names(iris_short) <- c("SL", "SW", "PL", "PW", "Species")
+```
+```{r}
+ci_results <- by(iris_short[, 1:4], 
+                 iris_short$Species, 
                  function(subdata) {
   apply(subdata, 2, calculate_ci)
 })
