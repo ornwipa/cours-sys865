@@ -273,7 +273,8 @@ shapiro.test(versicolor$Sepal.Width)
 ## Test d'hypothèse (suite)
 
 ```{r}
-t.test(setosa$Sepal.Width, versicolor$Sepal.Width)
+t.test(setosa$Sepal.Width, versicolor$Sepal.Width,
+       var.equal = TRUE)
 ```
 
 ## Test d'hypothèse (suite)
@@ -282,7 +283,8 @@ La valeur t observée est dans la région de rejet, et la valeur p est très pet
 
 ```{r, echo=FALSE}
 # Réalisation du test t entre Setosa et Versicolor
-resultat_test <- t.test(setosa$Sepal.Width, versicolor$Sepal.Width)
+resultat_test <- t.test(setosa$Sepal.Width, versicolor$Sepal.Width,
+                        var.equal = TRUE)
 
 # Extraction de la statistique t observée et des degrés de liberté
 valeur_t_obs <- resultat_test$statistic
@@ -324,8 +326,8 @@ legend("topright", legend = c("Valeur t Observée", "Valeurs t Critiques", "Rég
 3. La longueur des sépales et la longueur des pétales d'Iris setosa sont-elles égales ?
 
 ```{r}
-t.test(setosa$Sepal.Length, setosa$Petal.Length, 
-       paired = TRUE)
+t.test(setosa$Sepal.Length, setosa$Petal.Length,
+       paired = TRUE, var.equal = TRUE)
 ```
 
 ## Intervalle de confiance (retour)
@@ -389,7 +391,7 @@ cat(sprintf("IC de la différence = (%.2f, %.2f)",
             ci_setosa_differences[1], ci_setosa_differences[2]))
 ```
 
-- \textcolor{purple}{L'IC de la différence ne couvre pas 0. Donc, il n'y a pas de différence significative.}
+- \textcolor{purple}{L'IC de la différence ne couvre pas 0. Donc, les deux paramètres sont statistiquement différents.}
 
 # Travaux pratiques
 

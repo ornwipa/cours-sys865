@@ -649,7 +649,8 @@ var.test(bmi_non_diabetic, bmi_diabetic)
 
 Effectuer le test t pour échantillons indépendants
 ```{r}
-t.test(bmi_non_diabetic, bmi_diabetic)
+t.test(bmi_non_diabetic, bmi_diabetic,
+       var.equal = TRUE)
 ```
 
 ## Attention!

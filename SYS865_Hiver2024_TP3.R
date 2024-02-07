@@ -16,11 +16,11 @@ wilcox.test(data0$Pregnancies, data1$Pregnancies) # p-value = 7.53e-05
 # Rejet H_0 : les nombres des "Pregnancies" ne sont pas égaux.
 
 var.test(data0$BloodPressure, data1$BloodPressure) # p-value = 0.223
-t.test(data0$BloodPressure, data1$BloodPressure) # p-value = 0.0002131
+t.test(data0$BloodPressure, data1$BloodPressure, var.equal = TRUE) # p-value = 0.0001237
 # Rejet H_0 : les pressions sanguins ne sont pas égales.
 
 var.test(data0$SkinThickness, data1$SkinThickness) # p-value = 0.3133
-t.test(data0$SkinThickness, data1$SkinThickness) # p-value = 1.677e-07
+t.test(data0$SkinThickness, data1$SkinThickness, var.equal = TRUE) # p-value = 2.793e-07
 # Rejet H_0 : les épaisseurs de la peau ne sont pas égaux.
 
 var.test(data0$Insulin, data1$Insulin) # p-value = 0.0005164
