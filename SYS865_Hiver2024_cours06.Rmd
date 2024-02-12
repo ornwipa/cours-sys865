@@ -164,7 +164,7 @@ Puis observer la valeur p: `p-value < 0.05`
 
 - Le test F suppose que les données des deux échantillons sont **normalement distribuées**.
 
-- Les observations de chaque échantillon doivent être **indépendantes** les unes des autres. Une violation de cette hypothèse, comme cela peut se produire dans la conception appariée, nécessite des approches de test différentes.
+- Les observations de chaque échantillon doivent être **indépendantes** les unes des autres. Une violation de cette hypothèse, comme cela peut se produire dans la conception appariée.
 
 \pause
 \textcolor{red}{... Quoi faire quand des données ne sont pas normalement distribuées ?}
@@ -178,23 +178,20 @@ Le test de Levene évalue les différences entre les moyennes des écarts absolu
 **Hypothèse alternative** \(H_1: \sigma_1^2 \neq \sigma_2^2\)
 
 \pause
-La statistique de test de Levene est calculée à partir d'une ANOVA sur ces écarts absolus.
-
 La statistique suit une distribution F avec \(1\) et \(N-2\) degrés de liberté, où \(N\) est le nombre total d'observations.
 
 \pause
 Une `p-value` inférieure à un seuil (généralement 0,05) indique des différences significatives dans les variances entre les groupes.
 
-\pause
-Ce test est particulièrement utile pour sa robustesse face à des distributions non normales.
-
 ## Analyse avec R
 
 Le langage R a une bibliothèque pour le test de Levene.
-```{r warning=FALSE}
+```{r echo=FALSE, warning=FALSE}
 if (!requireNamespace("car", quietly = TRUE)) {
   install.packages("car")
 }
+```
+```{r warning=FALSE}
 library(car)
 leveneTest(Glucose ~ factor(Outcome), data = filtered_data)
 ```
@@ -205,15 +202,13 @@ leveneTest(Glucose ~ factor(Outcome), data = filtered_data)
 
 ## Le moyen le plus rapide en langage R
 
-Nous utilisons déjà le test de Shapiro-Wilk dans les cours précédents.
+Nous utilisons déjà le **Test de Shapiro-Wilk** dans les cours précédents.
 
 ```{r}
 shapiro.test(filtered_data$Glucose)
 ```
+
 \pause
-
-**Test de Shapiro-Wilk** est particulièrement efficace pour les petits échantillons. 
-
 \(H_0\) est que les données sont normalement distribuées.
 
 Une `p-value` faible (typiquement < 0,05) suggère que les données ne suivent pas une distribution normale.
@@ -231,7 +226,7 @@ Une `p-value` faible (typiquement < 0,05) suggère que les données ne suivent p
 ## Graphique Q-Q
 
 ```{r}
-qqnorm(filtered_data$Glucose, main = "Q-Q Plot for Glucose")
+qqnorm(filtered_data$Glucose, main = "Q-Q Plot")
 qqline(filtered_data$Glucose, col = "red")
 ```
 
