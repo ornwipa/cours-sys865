@@ -234,6 +234,6 @@ qqline(filtered_data$Glucose, col = "red")
 
 En divisant la base de données "Pima Indian Diabetes" en groupe de non diabétiques et diabétiques, pour chacun des huit paramètres (`Pregnancies`, `Glucose`, `BloodPressure`, `SkinThickness`, `Insulin`, `BMI`, `DiabetesPedigreeFunction` et `Age`) ...
 
-1. Créer un graphique Q-Q pour tester la normalité des donées
+1. Créer un graphique Q-Q pour tester la normalité des données
 
 2. Tester l'homogénéité des variances en utilisant une méthode appropriée (soit le test F ou le test de Levene) en fonctionne de la normalité des données
