@@ -1,0 +1,142 @@
+---
+title: "SYS865 Inférence statistique avec programmation R"
+author: "Ornwipa Thamsuwan"
+date: "28 février 2024"
+# date: "`r format(Sys.time(), '%d-%m-%Y')`"
+output:
+  beamer_presentation: 
+    slide_level: 2
+    theme: "Goettingen"
+    colortheme: "crane"
+    fonttheme: "structurebold"
+header-includes:
+- \setbeamertemplate{navigation symbols}{}
+- \setbeamertemplate{footline}[page number]
+---
+
+```{r, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+# Test de l'indépendence des variables catégorielles
+
+Le **test du Chi-carré** est une méthode statistique utilisée pour déterminer s'il existe une association significative entre deux variables catégorielles. 
+
+Il compare les fréquences observées dans les catégories aux fréquences attendues s'il n'y avait aucune association (\(H_0\)).
+
+## Statistique du test du Chi-carré
+
+Calculée comme suit : $$\chi^2 = \sum \frac{(O_{ij} - E_{ij})^2}{E_{ij}}$$
+
+- $O_{ij}$ : Fréquence observée dans la cellule (i, j)
+
+- $E_{ij}$ : Fréquence attendue dans la cellule (i, j)
+
+\pause
+La **fréquence attendue** pour une cellule est $$E_{ij} = \frac{(Total\ de\ la\ ligne) \times (Total\ de\ la\ colonne)}{Total\ général}$$
+Cela suppose l'indépendance entre les variables.
+
+## Valeur critique du test du Chi-carré
+
+Déterminé par le degré de liberté : $$ df = (Nombre\ de\ lignes - 1) \times (Nombre\ de\ colonnes - 1)$$
+
+\pause
+```{r echo=FALSE}
+df <- 3
+alpha <- 0.05
+critical_value <- qchisq(1-alpha, df)
+
+# Création du graphique
+curve(dchisq(x, df), from = 0, to = critical_value * 1.5, 
+      main = "Distribution du Chi-carré, df = 3", xlab = "Valeur", ylab = "Densité")
+abline(v = critical_value, col = "red", lwd = 2, lty = 2)
+text(critical_value, 0.02, paste("Valeur critique =", round(critical_value, 2), 
+                                 "(Alpha = 0.05)"), pos = 4)
+
+# Ajouter une zone colorée pour la région critique
+x_crit <- seq(critical_value, critical_value * 1.5, length.out = 100)
+y_crit <- dchisq(x_crit, df)
+polygon(c(x_crit, rev(x_crit)), c(rep(0, length(x_crit)), rev(y_crit)), 
+        col = "red", border = NA, density = 20)
+```
+
+## Exemple avec R
+
+Base de données sur R, `HairEyeColor`
+
+\(H_0\) : Il n'y a pas d'association significative entre la couleur des cheveux et la couleur des yeux.
+
+```{r, echo=FALSE}
+observe <- margin.table(HairEyeColor, margin = c(1, 2))
+```
+
+**Tableau de contigence**
+
+```{r}
+knitr::kable(observe)
+```
+
+## Exemple avec R
+
+**Fréquences attendues**
+
+```{r}
+total <- sum(observe)
+attendu <- outer(margin.table(observe, 1), 
+                 margin.table(observe, 2), 
+                 FUN = "*") / total
+knitr::kable(attendu)
+```
+
+## Exemple avec R
+
+La fonction `margin.table` permet de calculer les sommes marginales pour le tableau de contingence `observe` :
+
+- `margin.table(observe, 1)` calcule les sommes des lignes du tableau `observe`. Cela additionne les comptes sur toutes les colonnes pour chaque ligne, donnant les comptes totaux pour chaque niveau de la première variable (par exemple, la couleur des cheveux).
+
+- `margin.table(observe, 2)` calcule les sommes des colonnes du tableau `observe`. Cela additionne les comptes sur toutes les lignes pour chaque colonne, donnant les comptes totaux pour chaque niveau de la seconde variable (par exemple, la couleur des yeux).
+
+La fonction `outer(..., FUN = "*")` prend ces totaux de lignes et de colonnes et calcule le produit extérieur des deux vecteurs. Le produit extérieur de deux vecteurs \(a\) et \(b\) est une matrice \(M\) où chaque élément \(m_{ij}\) est le produit de \(a_i\) et \(b_j\). 
+
+## Exemple avec R
+
+**Statistique du Chi-carré**
+
+```{r}
+chi_carre_stat <- sum((observe-attendu)^2 /attendu)
+round(chi_carre_stat, 3)
+```
+
+\pause
+
+**Valeur critique** pour $\alpha = 0.05$ et degrés de liberté
+
+```{r}
+df <- (nrow(observe)-1) * (ncol(observe)-1)
+valeur_critique <- qchisq(0.95, df)
+round(valeur_critique, 3)
+```
+
+## Exemple avec R
+
+**Conclusion**
+
+`chi_carre_stat` > `valeur_critique`, rejet \(H_0\). 
+
+Il existe une association significative entre les variables.
+
+\pause
+Ou...
+
+En appliquant directement la fonction R
+```{r}
+chisq.test(observe)
+```
+
+# Résultats de recherche actuelle
+
+Référer au code séparé et non pas encore publié ... 
+
+- "Score" de Échelle d'Équilibre vs. Historique de Chute
+
+- "Score" de Échelle d'Équilibre vs. Trouble de Vision
