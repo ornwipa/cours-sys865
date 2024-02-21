@@ -139,7 +139,7 @@ legend("topright", legend = c("Outcome 0", "Outcome 1", "Power = 1 - Erreur Type
 
 \pause
 
-2. Choisir un niveau de signification (\(\alpha\)). Typiquement, \(\alpha = 0.05\).
+2. Choisir un niveau de signification (\(1-\alpha\)). Typiquement, \(\alpha = 0,05\).
 
 \pause
 
@@ -159,7 +159,7 @@ Où \(\mu_1\) et \(\mu_2\) sont les moyennes des deux groupes, et \(SD_{\text{po
 
 \[ SD_{\text{poolisée}} = \sqrt{\frac{(n_1 - 1) \times SD_1^2 + (n_2 - 1) \times SD_2^2}{n_1 + n_2 - 2}} \]
 
-Où \( n_1 \) et \( n_2 \) sont les tailles d'échantillon des deux groupes, et \( SD_1 \) et \( SD_2 \) sont les déviations standard des deux groupes.
+Où \( n_1 \) et \( n_2 \) sont les tailles d'échantillon des deux groupes, et \( SD_1 \) et \( SD_2 \) sont les écarts-types des deux groupes.
 
 ## Calcul de la puissance statistique
 
@@ -168,7 +168,7 @@ Où \( n_1 \) et \( n_2 \) sont les tailles d'échantillon des deux groupes, et 
 \pause
 Paramètres
 ```{r}
-effect_size <- 0.5
+effect_size <- 0.5 # taille d'effet
 n1 <- 30
 n2 <- 40
 alpha <- 0.05
@@ -225,7 +225,7 @@ n2 <- 120 # augmenté de 40
 \pause
 Tout en fixant d'autres paramètres, la puissance augmente à
 ```{r, echo=FALSE}
-effect_size <- 0.5
+effect_size <- 0.5 
 df <- n1 + n2 - 2
 t_critical <- qt(1 - alpha / 2, df)
 ncp <- effect_size * sqrt((n1 * n2) / (n1 + n2))
@@ -269,7 +269,7 @@ Fixer les paramètres suivants :
 
 - Taille de l'effet (d de Cohen) : il s'agit de la différence anticipée entre les moyennes de deux groupes divisée par l'écart type.
 
-- Niveau de signification \(\alpha\) = 0,05.
+- Niveau de signification = 0,95, ou \(\alpha\) = 0,05.
 
 - Puissance souhaitée \(1-\beta\) = 0,80.
 
@@ -315,7 +315,7 @@ calculate_sample_size(effect_size, power, alpha)
 
 ## Plus d'exemples
 
-Utiliser le célèbre jeu de données iris, en nous concentrant sur les largeurs de sépales des espèces versicolor et virginica.
+Comparant la largeur de sépale des espèces versicolor et virginica.
 
 ```{r}
 versicolor <- 
@@ -368,7 +368,7 @@ effect_size
 # Calculate power using the effect size
 alpha <- 0.05
 t_critical <- qt(1 - alpha/2, df = 2*n - 2)
-ncp <- effect_size * sqrt(n/2)
+ncp <- effect_size * sqrt(n*n/(n+n)) # ou sqrt(n/2)
 power <- 1 - 
   pt(t_critical, df = 2*n - 2, ncp = ncp) +
   pt(-t_critical, df = 2*n - 2, ncp = ncp)
