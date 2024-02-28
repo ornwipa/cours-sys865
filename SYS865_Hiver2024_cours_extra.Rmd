@@ -64,11 +64,13 @@ polygon(c(x_crit, rev(x_crit)), c(rep(0, length(x_crit)), rev(y_crit)),
 
 Base de données sur R, `HairEyeColor`
 
-\(H_0\) : Il n'y a pas d'association significative entre la couleur des cheveux et la couleur des yeux.
+- \(H_0\) : Il n'y a pas d'association significative entre la couleur des cheveux et la couleur des yeux.
 
 ```{r, echo=FALSE}
 observe <- margin.table(HairEyeColor, margin = c(1, 2))
 ```
+
+\pause
 
 **Tableau de contigence**
 
@@ -82,9 +84,9 @@ knitr::kable(observe)
 
 ```{r}
 total <- sum(observe)
-attendu <- outer(margin.table(observe, 1), 
-                 margin.table(observe, 2), 
-                 FUN = "*") / total
+attendu <- round(outer(margin.table(observe, 1), 
+                       margin.table(observe, 2), 
+                       FUN = "*") / total, 2)
 knitr::kable(attendu)
 ```
 
@@ -92,11 +94,23 @@ knitr::kable(attendu)
 
 La fonction `margin.table` permet de calculer les sommes marginales pour le tableau de contingence `observe` :
 
-- `margin.table(observe, 1)` calcule les sommes des lignes du tableau `observe`. Cela additionne les comptes sur toutes les colonnes pour chaque ligne, donnant les comptes totaux pour chaque niveau de la première variable (par exemple, la couleur des cheveux).
+- `margin.table(observe, 1)` calcule les sommes des lignes du tableau `observe`. Cela additionne les comptes sur toutes les colonnes pour chaque ligne, donnant les comptes totaux pour chaque niveau de la couleur des cheveux.
 
-- `margin.table(observe, 2)` calcule les sommes des colonnes du tableau `observe`. Cela additionne les comptes sur toutes les lignes pour chaque colonne, donnant les comptes totaux pour chaque niveau de la seconde variable (par exemple, la couleur des yeux).
+```{r}
+margin.table(observe, 1)
+```
 
-La fonction `outer(..., FUN = "*")` prend ces totaux de lignes et de colonnes et calcule le produit extérieur des deux vecteurs. Le produit extérieur de deux vecteurs \(a\) et \(b\) est une matrice \(M\) où chaque élément \(m_{ij}\) est le produit de \(a_i\) et \(b_j\). 
+## Exemple avec R
+
+- `margin.table(observe, 2)` calcule les sommes des colonnes du tableau `observe`. Cela additionne les comptes sur toutes les lignes pour chaque colonne, donnant les comptes totaux pour chaque niveau de la couleur des yeux.
+
+```{r}
+margin.table(observe, 2)
+```
+
+\pause
+
+La fonction `outer(..., FUN = "*")` prend ces totaux de lignes et de colonnes et calcule le produit extérieur des deux vecteurs. 
 
 ## Exemple avec R
 
