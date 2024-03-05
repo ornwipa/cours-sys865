@@ -38,17 +38,29 @@ La corrélation est souvent mesurée par un **coefficient** qui varie entre -1 e
 
 Un coefficient de 1 indique une corrélation positive parfaite, -1 indique une corrélation négative parfaite, et 0 indique l'absence de corrélation.
 
+## Corrélation
+
+Fonction R : `cor(x, y = NULL, use = "everything", method = c("pearson", "kendall", "spearman"))`
+
+\pause
+
+Lorsqu'il manque des valeurs dans l'ensemble de données, il faut bien choisir l'argument `use` parmi `everythng`, `all.obs`,  `complete.obs`, `na.or.complete`, ou `pairwise.complete.obs`.
+
+\pause
+
+`method = c("pearson", "kendall", "spearman")`
+
+Avec quelle méthode est-ce qu'on va utiliser ?
+
 ## Corrélation de Pearson (Paramétrique)
 
-Définition: La corrélation de Pearson, également connue sous le nom de coefficient de corrélation produit-moment de Pearson, évalue la **relation linéaire** entre deux variables quantitatives.
+La corrélation de Pearson évalue la **relation linéaire** entre deux variables quantitatives.
 
-Caractéristiques: Valeurs entre -1 et 1.
+Elle est utilisée lorsque les deux variables sont **normalement distribuées** et la relation est supposée être linéaire.
 
-Utilisation: Préférable lorsque les deux variables sont **normalement distribuées** et la relation est supposée être linéaire.
+\pause
 
-## Corrélation de Pearson (Paramétrique)
-
-Formule: Corrélation de Pearson = (Covariance de X et Y) / (Écart-type de X * Écart-type de Y).
+= (Covariance de X et Y) / (Écart-type de X * Écart-type de Y).
 
 $$
 r_{xy} = \frac{\sum{(x_i - \bar{x})(y_i - \bar{y})}}{\sqrt{\sum{(x_i - \bar{x})^2} \sum{(y_i - \bar{y})^2}}}
@@ -58,15 +70,13 @@ où \( r_{xy} \) est le coefficient de corrélation de Pearson entre les variabl
 
 ## Corrélation de Spearman (Non-Paramétrique)
 
-Définition: La corrélation de Spearman, ou le coefficient de **rang** de Spearman, est utilisée pour mesurer la force et la direction de l'association entre deux variables classées.
+La corrélation de Spearman, ou le coefficient de **rang** de Spearman, est utilisée pour mesurer la force et la direction de l'association entre deux variables.
 
-Caractéristiques: Également évaluée entre -1 et 1. Moins sensible aux valeurs aberrantes.
+Elle est moins sensible aux valeurs aberrantes.
 
-Utilisation: Appropriée lorsque les données ne sont pas normalement distribuées ou lorsqu'on examine des relations non linéaires.
+\pause
 
-## Corrélation de Spearman (Non-Paramétrique)
-
-Formule: Corrélation de Spearman = 1 - (6 * Somme des carrés des différences de rang) / (n(n^2 - 1)).
+ = 1 - (6 * Somme des carrés des différences de rang) / (n(n^2 - 1)).
 
 $$
 \rho = 1 - \frac{6 \sum d_i^2}{n(n^2 - 1)}
@@ -104,7 +114,7 @@ for (variable in names(diabetes_subset)) {
 }
 ```
 \pause
-Les données ne sont pas normalement distribuées. Il faut donc utiliser la corrélation de Spearman.
+Les données ne sont pas normalement distribuées. On va donc utiliser la corrélation de Spearman.
 
 ## Analyse avec R : Histogrammes
 
@@ -238,11 +248,11 @@ plot(iris_setosa$Sepal.Length, iris_setosa$Sepal.Width,
 \pause
 Ainsi, nous démontrerons le calcul de corrélation de Pearson pour la longueur et la largeur des sépales de `setosa`.
 
-## Analyse avec R : Corrélation de Pearson
+## Analyse avec R : Corrélation
 
-La méthode par défaut pour `cor()` est le coefficient de corrélation de Pearson.
+La méthode par défaut pour la fonction `cor()` est le coefficient de corrélation de Pearson.
 
-La fonction `cor(x, y)` ou `cor(x, y, method = "pearson")` calcule le coefficient de corrélation de Pearson entre deux variables `x` et `y`.
+Lorsque les variables `x`et `y` sont normalement distribuées, on utilise la fonction `cor(x, y)` ou `cor(x, y, method = "pearson")` pour calculer le coefficient de corrélation de Pearson entre deux variables `x` et `y`.
 
 ```{r}
 cor(iris_setosa$Sepal.Length, iris_setosa$Sepal.Width)
@@ -314,7 +324,7 @@ L'objectif est d'estimer les coefficients \( \beta_0 \) et \( \beta_1 \) à part
   - \( (\beta_0 + \beta_1 x_i) \) est la valeur prédite par le modèle
 
 \pause
-- Minimisation de la a somme des carrés des résidus : \( \sum \epsilon_i^2 = \sum (y_i - (\beta_0 + \beta_1 x_i))^2 \)
+- Minimise la a somme des carrés des résidus : \( \sum \epsilon_i^2 = \sum (y_i - (\beta_0 + \beta_1 x_i))^2 \)
 
 - Trouve les coefficients \( \beta_0 \) et \( \beta_1 \) qui minimisent cette somme
 
@@ -407,7 +417,7 @@ abline(h = 0, col = "red")
 
 ## Analyse avec R : Normalité des Erreurs
 
-La valeur p du test Shapiro-Wilk des résidus du modèle (\(\epsilon\) ou `model$residuals`) est `r  shapiro.test(model$residuals)$p.value`.
+La valeur p du test Shapiro-Wilk des résidus du modèle (\(\epsilon\) ou `model$residuals`) est `r  round(shapiro.test(model$residuals)$p.value,2)`.
 
 ```{r, echo=FALSE}
 residuals <- resid(model)
@@ -551,10 +561,10 @@ On a observé que les intervalles de confiance des variables significatives (`BM
 ## Analyse avec R : R² et R² ajusté
 
 ```{r}
-summary(model1)$r.squared
-summary(model1)$adj.r.squared
-summary(model2)$r.squared
-summary(model2)$adj.r.squared
+round(summary(model1)$r.squared,5)
+round(summary(model1)$adj.r.squared,5)
+round(summary(model2)$r.squared,5)
+round(summary(model2)$adj.r.squared,5)
 ```
 
 # Travaux pratiques
