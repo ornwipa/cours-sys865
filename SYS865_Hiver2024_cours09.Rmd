@@ -109,7 +109,8 @@ legend(x="bottom", # Position of the legend
        inset=c(0, -0.4)) # Adjust horizontal and vertical position
 ```
 
-La réponse (`y` ou `Outcome`) n'est pas une variable continues, mais binaire, soit 0 ou 1 et non une valeur intermédiare.
+\pause
+La réponse (`y` ou `Outcome`) n'est pas une variable continues, mais binaire, soit 0 ou 1 et \textcolor{red}{non une valeur intermédiare.}
 
 ## Attention!
 
@@ -145,7 +146,7 @@ legend(x="bottom", # Position of the legend
        inset=c(0, -0.4)) # Adjust horizontal and vertical position
 ```
 
-Une alternative est la régression logistique, fournissant un résultat sous forme de probabilité que `y` soit 0 ou 1.
+Une alternative est la régression logistique, fournissant un résultat sous forme de **probabilité** que `y` soit 0 ou 1.
 
 ## Introduction au nouveau sujet
 
@@ -173,10 +174,7 @@ Le modèle de régression logistique est basé sur **la fonction logit, le logar
 \pause
 <br>
 
-**Méthode d'Estimation**
-
-- Les coefficients sont estimés en utilisant l'Estimation du Maximum de Vraisemblance (MLE).
-- Cette méthode trouve les coefficients qui maximisent la vraisemblance d'observer les données de l'échantillon.
+**Méthode d'Estimation** : Les coefficients sont estimés en utilisant l'Estimation du Maximum de Vraisemblance (MLE) afin de trouver les coefficients qui maximisent la vraisemblance d'observer les données de l'échantillon.
 
 \pause
 <br>
@@ -205,15 +203,15 @@ Le modèle de régression logistique est basé sur **la fonction logit, le logar
 
 ## Critère d'Information d'Akaike (AIC)
 
-- L'AIC est une mesure de la qualité relative d'un modèle statistique pour un ensemble de données.
-- Basé sur le concept d'\textcolor{red}{entropie d'information}, l'AIC offre un équilibre entre la complexité du modèle (nombre de paramètres) et l'adéquation du modèle.
+L'AIC est une mesure de la qualité **relative** d'un modèle statistique pour un ensemble de données, et basé sur le concept d'\textcolor{red}{entropie d'information}.
 
 \pause
-- Formule de l'AIC : \( AIC = 2k - 2\ln(L) \)
+- \( AIC = 2k - 2\ln(L) \)
   - \( k \) est le nombre de paramètres dans le modèle et 
   - \( L \) est la vraisemblance du modèle.
-- L'AIC pénalise les modèles pour leur complexité, aidant ainsi à éviter le surajustement.
-
+  
+L'AIC pénalise les modèles pour leur complexité (nombre de paramètres), aidant ainsi à éviter le surajustement.
+  
 \pause
 - \textcolor{red}{Une valeur AIC plus basse indique un meilleur modèle.}
 - Lors de la comparaison de modèles, la valeur absolue de l'AIC n'est pas aussi importante que la différence entre les valeurs AIC de différents modèles.
@@ -221,18 +219,18 @@ Le modèle de régression logistique est basé sur **la fonction logit, le logar
 
 ## Critère d'Information Bayésien (BIC)
 
-- Le BIC est similaire à l'AIC mais introduit une pénalité plus forte pour le nombre de paramètres dans le modèle.
-- Le BIC est dérivé de la \textcolor{red}{probabilité bayésienne} et utilisé pour la sélection de modèles.
+Le BIC, dérivé de la \textcolor{red}{probabilité bayésienne}, introduit une pénalité plus forte pour le nombre de paramètres dans le modèle.
 
 \pause
-- Formule du BIC : \( BIC = \ln(n)k - 2\ln(L) \)
+- \( BIC = \ln(n)k - 2\ln(L) \)
   - \( n \) est le nombre d'observations,
   - \( k \) est le nombre de paramètres, et
   - \( L \) est la vraisemblance du modèle.
-- Le BIC a tendance à pénaliser plus lourdement la complexité que l'AIC, surtout à mesure que la taille de l'échantillon augmente.
+
+Le BIC a tendance à pénaliser plus lourdement la complexité que l'AIC, surtout à mesure que la taille de l'échantillon augmente.
 
 \pause
-- Comme l'AIC, \textcolor{red}{une valeur BIC plus basse indique un meilleur modèle.}
+- \textcolor{red}{Une valeur BIC plus basse indique un meilleur modèle.}
 - La règle de décision pour comparer les modèles avec le BIC est similaire à l'AIC.
 - Une différence de 6 ou plus est considérée comme une preuve forte contre le modèle avec le BIC le plus élevé.
 
@@ -260,6 +258,8 @@ Le BIC est dérivé de la probabilité bayésienne et est plus concerné par l'i
 
 - But : L'AIC est mieux adapté aux modèles axés sur la prédiction, tandis que le BIC est plus approprié pour les modèles visant à expliquer la structure sous-jacente.
 
+# Démarches de sélection des variables de modèle
+
 ## Exemple : Sélection progressive
 
 Examiner la corrélation de toutes les variables indépendantes avec la variable dépendante `Outcome`
@@ -286,6 +286,11 @@ for (row_name in rownames(cor_matrix)) {
 model1 <- glm(Outcome ~ Glucose, 
               data=data_cleaned, family=binomial)
 AIC(model1)
+```
+
+\pause
+
+```{r}
 model2 <- glm(Outcome ~ Glucose + Age, 
               data=data_cleaned, family=binomial)
 AIC(model2)
@@ -301,7 +306,7 @@ model3 <- glm(Outcome ~ Glucose + Age + Insulin,
 AIC(model3)
 ```
 
-- Arrêter à `model2` et ne pas inclure `Insulin`
+- Retourner au `model2` et ne pas inclure `Insulin`
 
 \pause
 
@@ -336,12 +341,17 @@ modelf <- glm(Outcome ~ Pregnancies + Glucose + BloodPressure +
 round(summary(modelf)$coefficients, 4)
 ```
 
-- Éliminer `BloodPressure`, `SkinThickness`, `Insulin`, `Pregnancies`, ...
+- Éliminer `BloodPressure`, `SkinThickness`, `Insulin`, `Pregnancies`, ... une variable à la fois
 
 ## Exemple : Sélection régressive
 
 ```{r}
-AIC(modelf) # full model
+AIC(modelf) # modèle complète
+```
+
+\pause
+
+```{r}
 model5 <- glm(Outcome ~ Pregnancies + Glucose +
                 SkinThickness + Insulin + BMI + 
                 DbtPdgFunc + Age, 
@@ -349,7 +359,7 @@ model5 <- glm(Outcome ~ Pregnancies + Glucose +
 AIC(model5)
 ```
 
-- Ne pas garder `model5` (ne pas retirer `BloodPressure`), mais coninuer à retirer les autres variables
+- Ne pas garder `model5` (ne pas retirer `BloodPressure`), mais essayer de retirer les autres variables
 
 ## Exemple : Sélection régressive
 
