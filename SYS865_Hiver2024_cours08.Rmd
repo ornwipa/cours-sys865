@@ -252,7 +252,7 @@ Ainsi, nous démontrerons le calcul de corrélation de Pearson pour la longueur 
 
 La méthode par défaut pour la fonction `cor()` est le coefficient de corrélation de Pearson.
 
-Lorsque les variables `x`et `y` sont normalement distribuées, on utilise la fonction `cor(x, y)` ou `cor(x, y, method = "pearson")` pour calculer le coefficient de corrélation de Pearson entre deux variables `x` et `y`.
+Lorsque les variables `x` et `y` sont normalement distribuées, on utilise la fonction `cor(x, y)` ou `cor(x, y, method = "pearson")` pour calculer le coefficient de corrélation de Pearson entre deux variables `x` et `y`.
 
 ```{r}
 cor(iris_setosa$Sepal.Length, iris_setosa$Sepal.Width)
@@ -307,7 +307,7 @@ $$
 y = \beta_0 + \beta_1 x + \epsilon
 $$
 
-  - Intercept (\( \beta_0 \)) est l'ordonnée à l'origine ou la valeur attendue de \( y \) quand \( x=0 \).
+  - Ordonnée à l'origine (\( \beta_0 \)) est la valeur attendue de \( y \) quand \( x=0 \).
   
   - Pente (\( \beta_1 \)) est la pente de la ligne de régression indiquant le changement attendu dans \( y \) pour une augmentation d'une unité de \( x \).
   
@@ -390,7 +390,7 @@ confint(model, level = 0.95)
 
 ## Analyse avec R : R²
 
-**La force de l'association** : R² est-elle supérieure à 0,06 ?
+**La force de l'association** : R² est-elle supérieure à 0,60 ?
 
 ```{r}
 summary(model)$r.squared

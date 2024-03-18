@@ -541,3 +541,39 @@ Employez les méthodes de sélection progressive et régressive.
 Comparez différents modèles avec l'AIC et le BIC.
 
 Quelles variables apportent une contribution importante au modèle (sont des bons prédicteurs pour la réponse `Outcome`) ?
+
+# Projet 2
+
+Vous devez faire une présentation de votre projet, partager votre écran en expliquant et exécutant vos codes R devant vos collègues et interpréter les résultats.
+
+La proposition du projet doit contenir les éléments suivants :
+
+- Problématique
+- Objectifs du projet
+- Méthodologie
+- Retombées prévues
+
+La date limite pour la proposition est le 27 mars 2024.
+
+## Projet 2
+
+De plus, vous devez compter les démarches suivantes :
+
+- Sources des données
+- Visualisation des données
+  - Distribution des données de chaque variable
+  - Relation parmi l'ensemble des variables
+
+La date limite pour partager vos analyse exploratoire des données est le 3 avril 2024.
+
+## Projet 2
+
+Dernièrement, vous allez tenir compte la rétroaction des vos collègues et la professeure afin de créer un bon modèle de régression de votre choix. Vous devez expliquer :
+
+- Modèle de régression (linéaire, logistique ou d'autres)
+- Interprétation des résultats
+- Comparaison avec d'autres études
+- Limitations de votre projet
+- Impliquations pratiques
+
+La date de la présentation finale est le 10 avril 2024.
