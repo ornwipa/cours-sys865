@@ -1,0 +1,167 @@
+---
+title: "SYS865 Inférence statistique avec programmation R"
+author: "Ornwipa Thamsuwan"
+date: "27 mars 2024"
+output:
+  beamer_presentation:
+    slide_level: 2
+    theme: Goettingen
+    colortheme: crane
+    fonttheme: structurebold
+  ioslides_presentation: default
+header-includes:
+- \setbeamertemplate{navigation symbols}{}
+- \setbeamertemplate{footline}[page number]
+---
+
+```{r setup, include=FALSE}
+options(tinytex.verbose = TRUE)
+```
+
+# Récap
+
+### Régression linéaire
+La régression linéaire modélise la façon dont la moyenne \(\mu\) d'une variable de **réponse continue** \(Y\) est en fonction d'un ensemble de variables explicatives \(X\).
+  \[ \mu = E(Y) = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_kX_k \]
+
+\pause
+
+### Régression logistique
+La régression logistique modélise la manière dont les chances de « succès » \(p\) pour une variable de **réponse binaire** \(Y\) dépendent d'un ensemble de variables explicatives \(X\).
+  \[ \ln\left(\frac{p}{1 - p}\right) = \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_kX_k \]
+  
+## Introduction du nouveau sujet
+
+**Modèles linéaires généralisés**
+
+**« Generalized Linear Model (GLM) »**
+
+Pour les données qui ne suivent pas une distribution normale (comme le suppose la régression linéaire) ou une distribution binaire (comme dans la régression logistique), les modèles linéaires généralisés (GLM) offrent un cadre polyvalent grâce à l'utilisation d'autres distributions.
+
+# Modèles linéaires généralisés
+
+Il y a trois composants dans GLM.
+
+- **Composant Aléatoire** : la distribution de probabilité de la variable de réponse (Y). 
+
+  - Il s'agit de la seule composante aléatoire du modèle; il n'y a pas de terme d'erreur distinct
+  
+\pause
+
+- **Composant Systématique** : une combinaison linéaire de variables explicatives ou prédictives connues (\(\beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_kX_k\)), où \(\beta_0, \beta_1, ..., \beta_k\) sont des coefficients, et \(X_1, X_2, ..., X_k\) sont des variables.
+
+\pause
+
+- **Fonction de Lien** (\(\eta\)) : le lien entre les composants aléatoires et systématiques.
+
+  - Le choix de la fonction de lien dépend de la nature de la variable dépendante, \(Y\). 
+  
+  - Par exemple, une fonction de lien `logit` est utilisée pour les distributions binomiales de Y dans la régression logistique.
+
+
+## Relation avec l'exemple précédent
+
+Dans le contexte de la base de données sur le diabète chez les Pimas, un modèle de régression logistique pourrait être spécifié comme suit :
+
+- **Composant Aléatoire** : La variable `Outcome` suit une distribution de Bernoulli, où chaque essai (patient) peut aboutir soit à un succès (avoir le diabète, codé comme 1) soit à un échec (ne pas avoir le diabète, codé comme 0).
+
+\pause
+
+- **Composant Systématique** : la combinaison linéaire des prédicteurs ou caractéristiques des patients \(\beta_0 + \beta_1 \times \text{Pregnancies} + \beta_2 \times \text{Glucose} + ... + \beta_k \times \text{Age}\)
+
+\pause
+
+- **Fonction de Lien** : le lien logit \(\eta=\ln\left(\frac{p}{1-p}\right)\)
+
+## Relation avec l'exemple précédent : R code
+
+```{r, echo=FALSE}
+data <- read.csv("diabetes.csv")
+data_cleaned <- subset(data, Glucose != 0 &
+                         BloodPressure != 0 &
+                         SkinThickness != 0 &
+                         Insulin != 0 & BMI != 0)
+names(data_cleaned)[
+  names(data_cleaned) == 
+    "DiabetesPedigreeFunction"] <- "DbtPdgFunc"
+```
+```{r}
+glm_pima <- glm(Outcome ~ Pregnancies + Glucose + 
+                  BloodPressure + SkinThickness + 
+                  Insulin + BMI + DbtPdgFunc + Age, 
+                    data=data_cleaned, 
+                family=binomial(link="logit"))
+round(summary(glm_pima)$coefficients, 4)
+```
+
+## Relation avec l'exemple précédent : R code
+
+Le code \textcolor{brown}{family=binomial(link="logit")} spécifie la famille et la fonction de lien à utiliser dans le modèle. 
+
+- La famille `binomial` indique à la fonction `glm()` que la variable dépendante est binaire (dans ce cas, ayant le diabète ou non, souvent codée comme 1 ou 0). 
+
+- La partie `link="logit"` spécifie que la fonction de lien `"logit"` doit être utilisée, ce qui est standard pour la régression logistique qui modélise le log des cotes de la probabilité du résultat comme une combinaison linéaire des variables prédictives.
+
+
+## Régression de Poisson
+
+La régression de Poisson est particulièrement adaptée pour modéliser des données de comptage où la variable de réponse \(Y\) représente le nombre de fois qu'un événement se produit dans un intervalle ou un espace fixe. 
+
+\pause
+
+- **Composant Aléatoire** : \(Y\) suit une distribution de Poisson avec la moyenne \(\lambda\) des données de comptage non négatives.
+
+\pause
+
+- **Composant Systématique** : \(\beta_0 + \beta_1X_1 + \cdots + \beta_kX_k\)
+
+\pause
+
+- **Fonction de Lien** : \(\eta = \ln(\lambda)\)
+
+\pause
+
+**Exemple** : modélisation du nombre d'arrivées de clients dans un magasin en une heure en fonction de facteurs tels que le jour de la semaine et les activités promotionnelles
+
+## Régression de Poisson : Exemple
+
+La base de données `InsectSprays` est composé de deux colonnes :
+
+- `count` : Le nombre d'insectes observés dans chacune des unités expérimentales agricoles.
+- `spray` : Un facteur indiquant l'insecticide utilisé (A, B, C, D, E ou F).
+
+```{r}
+head(InsectSprays)
+```
+
+## Régression de Poisson : R code
+
+L'argument \textcolor{brown}{family=poisson(link="log")} spécifie qu'on utilise la régression de Poisson avec une fonction de lien `log`.
+
+```{r}
+mod_count <- glm(count ~ spray, data=InsectSprays,
+                 family=poisson(link="log"))
+```
+
+\pause
+
+Les coefficients indiquent l'efficacité des niveaux de spray par rapport au facteur A.
+
+```{r}
+round(summary(mod_count)$coefficients, 4)
+```
+
+# Travail en cours du projet
+
+**Éléments de la présentation aujoud'hui**
+
+- Problématique
+- Objectifs du projet
+- Méthodologie
+- Retombées prévues
+
+**Ordre des présentations**
+
+- Le 27 mars : C - D - E
+- Le 3 avril : D - E - C
+- Le 10 avril : E - C - D
